@@ -1,0 +1,14 @@
+cat <<EOF > .gitignore
+# the binary C
+proto_1
+a.out
+*.o
+
+# Files to vim and nvim
+*.swp
+*.swo
+
+# Depuration and logs
+*.log
+valgrind.txt
+EOF
