@@ -1,6 +1,6 @@
 cat <<EOF > .gitignore
 # the binary C
-proto_1
+proto_*
 a.out
 *.o
 
