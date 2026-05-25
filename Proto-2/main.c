@@ -2,13 +2,32 @@
 #include <stdlib.h>
 #include <sodium.h>
 
-// Important: (///)
+// Important: (---)
 // Context:   (+++)
 
-// ----------------------------------------------
-// Basic string element counter
-// ----------------------------------------------
-int str_len(char *str) {
+// ---------------------------------------------------------------
+// It's a function I wrote that looks for a character inside a 
+// string and returns the position of the string.
+// ---------------------------------------------------------------
+size_t str_cspn(const char *str1, const char *str2) {
+    
+    int i = 0;
+
+    while (str1[i] != '\0') {
+
+        if (str1[i] == str2[0]) {
+            return (i);
+        }
+        i++;
+    }
+
+    return (i);
+}
+
+// ---------------------------------------------------------------------------
+// A function that counts the number of characters in a list of characters.
+// ---------------------------------------------------------------------------
+int str_len(const char *str) {
     int i = 0;
 
     while(str[i] != '\0' && str[i] != '\n') {i++;}
@@ -16,286 +35,326 @@ int str_len(char *str) {
     return (i);
 }
 
+// -------------------------------------------------------------------------------------
+// This function decrypts with the parameters that the user enters as the name of 
+// the file to be decrypted and the program will ask for the password to be able 
+// to view the content of the encrypted file.
+// -------------------------------------------------------------------------------------
+int desencrypt_text(int argc, char *argv[]){
 
-// ----------------------------------
-// Basic string concatenator
-// ----------------------------------
-void str_cat(char *origin, char *copy) {
-
-    int i = 0;
-    int j = 0;
-
-    while(origin[i] != '\0' && origin[i] != '\n') {i++;}
-
-    while(copy[j] != '\0' && copy[j] != '\n') {
-        origin[i] = copy[j];
-        i++;
-        j++;
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Validate that the user passes the file name by argument
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    if (argc < 2) {
+        fprintf(stderr, "Uso: %s <nombre_del_archivo_cifrado>\n", argv[0]);
+        return (1);
     }
 
-    origin[i] = '\0';
-}
 
-// --------------------------------------------------------------------
-// A basic function to copy the contents of a variable.
-// --------------------------------------------------------------------
-void str_cpy(char *origin, char *copy) {
-    int i = 0;
-
-    while(copy[i] != '\0' && copy[i] != '\n') {
-        origin[i] = copy[i];
-        i++;
-    }
-
-    origin[i] = '\0';
-}
-
-// ------------------------------------
-// it's a simple count leng string.
-// ------------------------------------
-int str_len(char *str) {
-
-    int i = 0;
-
-    while(str[i] != '\0' && str[i] != '\n') {i++;}
-
-    return i;
-}
-
-// ------------------------
-// Function encryption.
-// ------------------------
-void encrypt_text(static char *pwd, const char *message_origin, unsigned char *out_content, size_t message_len) {
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Declaration of variables: name of the file, the key which is the symmetric secret key, salt is 
+    // what differs from each password, it prevents brute force attacks if you do not have the salt, the nonce 
+    // is so that the files look different every time they are encrypted.
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    const char *filename = argv[1];
     unsigned char key[crypto_secretbox_KEYBYTES];
     unsigned char salt[crypto_pwhash_SALTBYTES];
     unsigned char nonce[crypto_secretbox_NONCEBYTES];
 
-    unsigned char cifre[message_len + crypto_secretbox_MACBYTES];
-    char descifrado[message_len + 1];
 
-    // ++++++++++++++++++++++
-    // Proceso de CRIFRADO:
-    // ++++++++++++++++++++++
-    
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // Generamos los valores unicos para el cifrado y descrifrado.
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-     randombytes_buf(salt, sizeof salt);
-     randombytes_buf(nonce, sizeof nonce);
+    // +++++++++++++++++++++++++++++++++++++++++++++++
+    // Open the file in binary read mode ("rb").
+    // +++++++++++++++++++++++++++++++++++++++++++++++
+    FILE *file = fopen(filename, "rb");
 
-     // ++++++++++++++++++++++++++++++++++++++++++++++
-     // Convertimos la clave en una llave hash util.
-     // ++++++++++++++++++++++++++++++++++++++++++++++
-     crypto_pwhash(key,  sizeof key, pwd, str_len(pwd), salt
-             crypto_pwhash_OPSLIMIT_INTERACTIVE,
-             crypto_pwhash_MEMLIMIT_INTERACTIVE,
-             crypto_ALG_DEFAULT);
-     // +++++++++++++++++++++++
-     // ciframos el mensaje:
-     // +++++++++++++++++++++++
-     crypto_secretbox_easy(cifrado, (const unsigned char *)message_origin,
-             message_len, nonce, key);
-
-     // +++++++++++++++++++++++++++++++
-     // Mostramos el mensaje cifrado:
-     // +++++++++++++++++++++++++++++++
-     printf("Mensaje cifrado[hex]: ");
-     for(SIZE_T i = 0; i sizeof cifrado; i++) {printf("%02x", cifrado[i]);}
-     printf("\n");
-
-
-     // +++++++++++++++++++++++++
-     // Proceso de descifrado:
-     // +++++++++++++++++++++++++
-
-     if (crypto_secretbox_open_easy((unsigned char *)descifrado, cifrado, sizeof cifrado, nonce, pwd ) != 0) {
-         printf("[SYSTEM ERROR]: Incorrect password o corrupt data...\n");
-         
-         sodium_memzero(pwd, sizeof pwd);
-         return (1);
-     }
-
-     descifrado[message_len] = '\0';
-     printf(">> Data: %s\n", descrifrado);
-
-     // ++++++++++++++++++++++++
-     // Liberación de memoria:
-     // ++++++++++++++++++++++++
-     sodium_memzero(pwd, sizeof pwd);
-     return (1);
-}
-
-// ---------------------------------------------------
-// Main prototype execution environment:
-// ---------------------------------------------------
-int main(void) {
-
-    // +++++++++++++++++++++++++
-    // inicilization library:
-    // +++++++++++++++++++++++++
-    if(sodium_init() < 0) { 
-        printf("[SYSTEM ERROR]:The sodium library is missing, which is required to run this app.\n");
-        return (1);
-    }
-
-    // +++++++++++++++++++++++++++++++
-    // File content buffer.
-    // +++++++++++++++++++++++++++++++
-    FILE *file;
-    int size_buffer = 200;
-
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // We obtain the username using their local variable
-    // getenv and verify that we have indeed obtained it.
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    char *user_pointer_var = getenv("USER");
-
-    printf("\n[SYSTEM SEARCH]: user search in the work environment variable...\n");
-
-    if (user_pointer_var == NULL) {
-        user_pointer_var = getenv("LOGNAME");
-    }
-
-    else if (user_pointer_var == NULL) {
-        perror("[SYSTEM ERROR]: User not detected to complete file search...\n");
+    if (filename == NULL || filename[0] == '\0') {
+        fprintf(stderr, "[ERROR]: Invalid or null name file...\n");
         return (1);
     }
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // We created a buffer variable to avoid direct interaction
-    // with the machine's environment variable.
+    // Extract the header: Read the original Salt and Nonce.
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    size_t size_username = str_len(user_pointer_var) + 1;
+    if (fread(salt, 1, sizeof salt, file) != sizeof salt || fread(nonce, 1, sizeof nonce, file) != sizeof nonce) {
 
-    char *user = (char *)malloc(size_username * sizeof(char));
-    user[0] = '\0';
-
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++
-    // We create and initialize the route variable
-    // with a maximum buffer size for it (size_buffer).
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++
-    char *route = malloc(size_buffer * sizeof(char));
-
-    if (route == NULL) {
-        perror("[ERROR SYSTEM]: Failed to allocated memory in to creation route...\n");
-        return (1);
-    }
-
-    // +++++++++++++++++++
-    // inicialization.
-    // +++++++++++++++++++
-    route[0] = '\0';
-
-    printf("[SYSTEM DIRECTION]: creating the file save location...\n");
-
-    // +++++++++++++++++++++++++++
-    // Construction of the route.
-    // +++++++++++++++++++++++++++
-    char *home = "/home/\0";
-    
-    str_cpy(user, user_pointer_var);
-    user_pointer_var = NULL;
-
-    char *name_file = "/archivo\0";
-    char *ext_file = ".txt\0";
-
-    str_cat(route, home);
-    str_cat(route, user);
-    str_cat(route, name_file);
-    str_cat(route, ext_file);
-
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++
-    // We open the file we're going to read after
-    // building the path.
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++
-    file = fopen(route, "r");
-    printf("[SYSTEM DIRECTION]: creation of the file in the assembled address...\n");
-    name_file[0] = '\0';
-    ext_file[0] = '\0';
-    home[0] = '\0';
-    user[0] = '\0';
-
-    if (file == NULL) {
-        perror("[SYSTEM ERROR]: The file could not be read or found using the path...\n");
-        printf("[SYSTEM ERROR]: assembled route: %s\n", route);
-        
-        route[0] = '\0';
+        fprintf(stderr, "[Error]: The file is incomplete or not a valid format.\n");
         fclose(file);
         return (1);
     }
 
-    printf("\n[CONTENT FILE]:");
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Calculate the size of the remaining encrypted data.
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    long pos_actual = ftell(file);
+    fseek(file, 0, SEEK_END);
+
+    long total_size = ftell(file);
+    fseek(file, pos_actual, SEEK_SET); 
+
+    size_t cifrado_len = total_size - pos_actual;
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // The file must have at least the bytes of the authentication tag (MAC).-
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    if (cifrado_len <= crypto_secretbox_MACBYTES) {
+        fprintf(stderr, "[Error]: The file does not contain valid encrypted data.\n");
+        fclose(file);
+        return 1;
+    }
+
 
     // ++++++++++++++++++++++++++++++++++++++++++++++
-    // read and show the content to the archive.
+    // Allocate dynamic memory for buffers.
     // ++++++++++++++++++++++++++++++++++++++++++++++
-    
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // vamos al final del archivo para leer la cantidad
-    // en bytes de su tamaño.
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    fseek(archivo, 0, SEEK_END);
+    unsigned char *cifrado = malloc(cifrado_len);
+    size_t descifrado_len = cifrado_len - crypto_secretbox_MACBYTES;
+    char *descifrado = malloc(descifrado_len + 1); 
 
-    int size_buffer_file = ftell(file);
-
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // Asignación de memoria en el heap sobre la cantidad de caracteres del archivo.
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    char *copy_content_text = (char *)malloc(size_buffer_file + 1);
-
-    if (copy_content_text == NULL) {
-        printf("[MEMORY SYSTEM]: Failed to allocated memory in to creation copy to content...\n");
+    if (cifrado == NULL) {
+        fprintf(stderr, "[ERROR]: Memory Allocation Error...\n");
+        free(descifrado);
+        fclose(file);
         return (1);
     }
 
-    // +++++++++++++++++++++++++++++++
-    // Volver al inicio del archivo.
-    // +++++++++++++++++++++++++++++++
-    fseek(file, 0, SEEK_SET);
-
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // leemos todo el archivo y lo copiamos en la variable: copy_content_text
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    fread(copy_content_text, 1, size_buffer_file, file);
-    
-    copy_content_text[size_buffer_file] = '\0';
-
-    // +++++++++++++++++++++++
-    // Encrytation content:
-    // +++++++++++++++++++++++
-
-    // +++++++++++++++++++++++++++++++++++++++++
-    // Creation to the private key to encrypt.
-    // +++++++++++++++++++++++++++++++++++++++++
-    char *key = (char *)malloc(size_buffer * sizeof(char));
-
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++
-    // Verification to allocate memory from the malloc.
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++
-    if (key == NULL) {
-        perror("[ERROR SYSTEM]: Failed to allocate memory in the key...");
+    if (descifrado == NULL) {
+        fprintf(stderr, "[ERROR]: Memory Allocation Error...\n");
+        fclose(file);
+        free(cifrado);
         return (1);
     }
 
-    printf("\n>Introduce your key to encrypt:");
+    // +++++++++++++++++++++++++++++++++++
+    //Read the full cipher block
+    // +++++++++++++++++++++++++++++++++++
+    size_t bytes_read = fread(cifrado, 1, cifrado_len, file);
 
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // Read to the input the user, only to test the encrypt.
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    fgets(key, sizeof(key), stdin);
+    if (bytes_read != cifrado_len) {
+        fprintf(stderr, "[Error]: Could not read the entire file (%zu of %zu bytes read).\n", bytes_read, cifrado_len);
 
-    encrypt_text(key, copy_content_text);
+        fclose(file);
+        free(cifrado);
+        free(descifrado);
+
+        return (1);
+    }
+    fclose(file);
+
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++
+    //Asking the user for the password securely
+    // +++++++++++++++++++++++++++++++++++++++++++++++++
+    char pwd_2[256];
+    printf("Enter the password to decrypt:");
+
+    if (fgets(pwd_2, sizeof(pwd_2), stdin) == NULL) {
+        free(cifrado); 
+        free(descifrado);
+        return (1);
+    }
+
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++
+    //  Eliminar el salto de línea '\n' que mete fgets.
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++
+    pwd_2[str_cspn(pwd_2, "\n")] = '\0';
+
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Reconstruir la Clave de cifrado usando el Salt que leímos del archivo
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    printf("Deriving key... (wait a minute)\n");
+
+    if (crypto_pwhash(key, sizeof key, pwd_2, str_len(pwd_2), salt,
+                      crypto_pwhash_OPSLIMIT_INTERACTIVE,
+                      crypto_pwhash_MEMLIMIT_INTERACTIVE,
+                      crypto_pwhash_ALG_DEFAULT) != 0) {
+        fprintf(stderr, "[Error]: Could not generate the hash of the key...\n");
+        // +++++++++++++++++++++++++
+        // Memory Release.
+        // +++++++++++++++++++++++++
+        sodium_memzero(pwd_2, sizeof pwd_2);
+        free(cifrado); 
+        free(descifrado);
+        return (1);
+    }
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // We no longer need the password in plain text, we delete it immediately.
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    sodium_memzero(pwd_2, sizeof pwd_2);
+
+    // ++++++++++++++++++++++++++++++++++++++++
+    // We decrypt the contents of the file. 
+    // ++++++++++++++++++++++++++++++++++++++++
+    if (crypto_secretbox_open_easy((unsigned char *)descifrado, cifrado, cifrado_len, nonce, key) != 0) {
+
+        fprintf(stderr, "\n[SYSTEM ERROR]: Incorrect password o corrupt data...\n");
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Limpieza y salida inmediata para evitar SegFaults. 
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        sodium_memzero(key, sizeof key);
+        free(cifrado); 
+        free(descifrado);
+        exit(EXIT_FAILURE);
+    }
+
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Add the null terminator and print the resulting string.
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    descifrado[descifrado_len] = '\0';
+
+    printf("\n---------------------------------------\n");
+    printf(">> DECRYPTED FILE:\n");
+    printf("-----------------------------------------\n");
+    printf("%s\n", descifrado);
+    printf("-----------------------------------------\n");
+
+    // ++++++++++++++++++++++++++++++++++++++++++
+    // Final Heap Key Cleaning 
+    // ++++++++++++++++++++++++++++++++++++++++++
+    sodium_memzero(key, sizeof key);
+    free(cifrado);
+    free(descifrado);
+
+    return (0);
+
+} 
+
+// ------------------------
+// Function encryption.
+// ------------------------
+int encrypt_text(const char *filename, char *pwd, const char *message, size_t message_len) {
+
+    unsigned char key[crypto_secretbox_KEYBYTES];
+    unsigned char salt[crypto_pwhash_SALTBYTES];
+    unsigned char nonce[crypto_secretbox_NONCEBYTES];
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++
+    // We generate the random keys of key and nonce.
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++
+    randombytes_buf(salt, sizeof salt);
+    randombytes_buf(nonce, sizeof nonce);
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Encrypted buffer needs space for authentication tag (MAC). 
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    size_t cifrado_len = message_len + crypto_secretbox_MACBYTES;
     
-    free(key);
-    free(copy_content_text);
+    unsigned char *cifrado = malloc(cifrado_len);
+    if (cifrado == NULL) { return (1); }
+   
+    // ++++++++++++++++++++++++++++++++++++++++++++
+    // We encrypt the contents of the file. 
+    // ++++++++++++++++++++++++++++++++++++++++++++
+    if (crypto_pwhash(key, sizeof key, pwd, str_len(pwd), salt,
+                      crypto_pwhash_OPSLIMIT_INTERACTIVE,
+                      crypto_pwhash_MEMLIMIT_INTERACTIVE,
+                      crypto_pwhash_ALG_DEFAULT) != 0) {
+        fprintf(stderr, "[Error]: The hash of the key could not be generated.\n");
+        return (1);
+    }
 
-    printf("\n[SYSTEM ENCRYPT]: Encrypt to the all content to the file...\n");
-    
-    fclose(archivo);
-    
-    free(route);
-    free(user);
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Encrypt the message with the symmetric algorithm using the key and the nonce.
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    crypto_secretbox_easy(cifrado, (const unsigned char *)message, message_len, nonce, key);
 
-    printf("[SYSTEM FILE]: close the file to create and memory free from the heap...\n\n");
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Open file to write in binary mode ("wb").
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+    FILE *file = fopen(filename, "wb");
+
+    if (file == NULL) {
+        perror("[ERROR]: Error opening file to write...\n");
+        // ++++++++++++++++++++++++++++++++++++
+        // Memory release and cleaning.
+        // ++++++++++++++++++++++++++++++++++++
+        sodium_memzero(key, sizeof key);
+        free(cifrado);
+        return (1);
+    }
+
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Escribir la cabecera (Salt + Nonce) y luego los datos cifrados.
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fwrite(salt, 1, sizeof salt, file);
+    fwrite(nonce, 1, sizeof nonce, file);
+    fwrite(cifrado, 1, cifrado_len, file);
+
+    printf("\n---------------------------\n");
+    printf(" content[hex]: %s", cifrado);
+    printf("\n---------------------------\n");
+
+    // ++++++++++++++++++++++++++++++++++
+    // Limpieza de seguridad y cierre
+    // ++++++++++++++++++++++++++++++++++
+    fclose(file);
+    sodium_memzero(key, sizeof key);
+    free(cifrado);
+
+
+    printf("[OK] File '%s' encrypted and saved successfully.\n", filename);
+
+    return (0);
+
+}
+
+
+int main(int argc, char *argv[]) {
+    // -------------------------------------------
+    // Inicializar Libsodium obligatoriamente.
+    // -------------------------------------------
+    if (sodium_init() < 0) {
+        fprintf(stderr, "[Error]: Libsodium could not be initialized.\n");
+        return (1);
+    }
+
+    char pwd[256];
+    printf("Enter the password to encrypt:");
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // We use fgets to get input from the user with their password and use it 
+    // to encrypt files.
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
+        pwd[0] = '\0';
+        return (1);
+    }
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Remove the line break '\n' that puts fgets in input.  +
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    pwd[str_cspn(pwd, "\n")] = '\0';
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Default data to test the prototype quickly.
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++
+    const char *filename = "archivo.txt\0";
+    char message[256];
+    printf("\nEnter the text you want to encrypt: ");
+
+    if (fgets(message, sizeof(message), stdin) == NULL) {
+        pwd[0] = '\0';
+        message[0] = '\0';
+        return (1);
+    }
+
+    size_t len_message = str_len(message);
+
+    encrypt_text(filename, pwd, (const char *)message, len_message);
+    
+    pwd[0] = '\0';
+    message[0] = '\0';
+
+    desencrypt_text(argc, argv);
+
     return (0);
 }
+
+
+
