@@ -702,6 +702,7 @@ bool content_removal(char *route_file) {
 
 int main(int argc, char *argv[]) {
 
+    
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Verify that the user has the libsodium library.
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -712,13 +713,7 @@ int main(int argc, char *argv[]) {
 
     const size_t max_range_route_file = 256;
 
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // Verify that the argument path respects the buffer limits.
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    if (str_len(argv[1]) >= max_range_route_file) {
-        fprintf(stderr, "\n[ERROR]: The file path you entered is too large for the expected size.\n");
-        return (1);
-    }
+    
 
     
         printf("\n\n");
@@ -729,7 +724,7 @@ int main(int argc, char *argv[]) {
         printf("\e[35m██\e[32m║  \e[35m██\e[32m╗\e[35m██\e[32m║  \e[35m██\e[32m║   \e[35m██\e[32m║   \e[35m██\e[32m║        \e[35m██\e[32m║   \e[32m╚\e[35m██████\e[32m╔╝\e[0m       \e[35m██\e[32m║   \e[35m███████\e[32m╗\e[35m██\e[32m╔╝ \e[35m██\e[32m╗\e[0m\n");
         printf("\e[32m╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝        ╚═╝    ╚═════╝ \e[0m       \e[32m╚═╝   ╚══════╝╚═╝  ╚═╝\e[0m\n");
         printf("\n\n");
-        printf("\e[32m ── [ DATA CLOAKING SYSTEM by James] ─────────────────────────────────────── v0.0.2 ──\e[0m\n");
+        printf("\e[32m ── [ DATA CLOAKING SYSTEM by James] ─────────────────────────────────────── v0.1.0 ──\e[0m\n");
         printf("\e[32m-------------------------------------------------------------------------------------------\e[0m\n");
         printf("\e[35m[>]\e[0m \e[32mStatus: PRE-LIMINAR (Active Steneography mode))\e[0m\n");
         printf("\e[35m[>]\e[0m \e[32mTarget: Custom User File via CLI\e[0m\n");
@@ -763,6 +758,14 @@ int main(int argc, char *argv[]) {
             // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             if (argc < 2) {
                 fprintf(stderr, "[!] A path is required to view file content: %s /path/to/file.jpg", argv[0]);
+                return (1);
+            }
+
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // Verify that the argument path respects the buffer limits.
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            if (str_len(argv[1]) >= max_range_route_file) {
+                fprintf(stderr, "\n[ERROR]: The file path you entered is too large for the expected size.\n");
                 return (1);
             }
 
@@ -906,6 +909,14 @@ int main(int argc, char *argv[]) {
             // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             if (argc < 2) {
                 fprintf(stderr, "[!] A path is required to edit a file: %s /path/to/file.jpg", argv[0]);
+                return (1);
+            }
+
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // Verify that the argument path respects the buffer limits.
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            if (str_len(argv[1]) >= max_range_route_file) {
+                fprintf(stderr, "\n[ERROR]: The file path you entered is too large for the expected size.\n");
                 return (1);
             }
 

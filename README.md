@@ -58,7 +58,7 @@ To meet strict anti-forensics and data sanitization standards, every module is s
 ### Usage Instructions
 
 > [!IMPORTANT]
-> The program performs a global validation of the arguments received at startup. Therefore, it is always mandatory to pass a file path as an argument (`argv[1]`), even if you plan to use the option to create a new file from scratch.
+> When you want to view or edit a file you need to strictly set the file path and that same path exists on your computer, otherwise those actions cannot be executed.
 
 ### General Execution
 Since the tool operates with storage isolation in the `/root/` directory and requires secure interaction with the protected file system, it must be executed strictly with administrative privileges:
