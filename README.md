@@ -113,7 +113,7 @@ git clone [https://github.com/JBHCK32/Krypto_Tex.git](https://github.com/JBHCK32
 cd Krypto_Tex/Proto-3
 
 # Compile the cryptographic engine prototype
-ggcc -Wall -Wextra -Werror -O2     -fstack-protector-strong     -D_FORTIFY_SOURCE=3     -fPIE -pie     -Wl,-z,relro,-z,now     -Wl,-z,noexecstack     prototipo_metadatos.c -o kryptotex -lsodium
+gcc -Wall -Wextra -Werror -O2     -fstack-protector-strong     -D_FORTIFY_SOURCE=3     -fPIE -pie     -Wl,-z,relro,-z,now     -Wl,-z,noexecstack     prototipo_metadatos.c -o kryptotex -lsodium
 
 # Run under Valgrind monitoring to verify memory hygiene
 sudo -E valgrind --leak-check=full ./kryptotex file.jpg
