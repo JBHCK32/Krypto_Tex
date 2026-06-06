@@ -6,10 +6,11 @@
 // Important: (---)
 // Context:   (+++)
 
-// ----------------------------------------------------------------------------
-// Estas son variables qie yop cree para poder hacer las cosas de manera
-// artesanal.
-// ----------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------
+// These are variables that I create to be able to do things in a way that 
+// "artisanal", in the end it's just to make the program deterministic, 
+// to avoid incessant things and to show that the project is totally transparent.
+// ---------------------------------------------------------------------------------
 size_t str_len(const char *str) {
     size_t i = 0;
     while(str[i] != '\0' && str[i] != '\n') { i++; }
