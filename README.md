@@ -49,7 +49,54 @@ The architecture evolves through four incremental engineering phases designed to
 To meet strict anti-forensics and data sanitization standards, every module is subjected to rigorous testing boundaries:
 
 * **Volatile Processing:** Plaintext strings enter via bounded inputs (`fgets`), process strictly within volatile memory space, and are immediately overwritten using `sodium_memzero` prior to free calls to mitigate cold-boot or memory-dump exploits.
-* **Zero-Leak Enforcement:** No unencrypted payload ever touches persistent storage. Compilation profiles treat all warnings as fatal errors to enforce strict data types, boolean compliance (`<stdbool.h>`), and guard-clause control flows.
+* **Zero-Leak Enforcement:** No unencrypted payload ever touches persistent storage. Compilation profiles treat all warnings as fatal errors to enforce strict data types and guard-clause control flows.
+
+---
+
+## How to use(User Manual):
+
+### Usage Instructions
+
+> [!IMPORTANT]
+> The program performs a global validation of the arguments received at startup. Therefore, it is always mandatory to pass a file path as an argument (`argv[1]`), even if you plan to use the option to create a new file from scratch.
+
+### General Execution
+Since the tool operates with storage isolation in the `/root/` directory and requires secure interaction with the protected file system, it must be executed strictly with administrative privileges:
+
+```bash
+sudo ./kryptotex /path/to/container_file.jpg
+Interactive Menu Guide
+Once the binary is initialized, the system will display the interface in the terminal and prompt for an option:
+```
+
+### Option 1: Open File (jpg)
+This option extracts and decrypts the hidden content within the file specified in the command line at program startup (`argv[1]`).
+
+1. Enter the number `1` in the terminal.
+2. The system will request the unlock password.
+3. Key derivation will be processed in RAM and, if the credentials are correct, the hidden message will be displayed directly in the console under the `DECRYPTED FILE` section.
+
+---
+
+### Option 2: Create a New File (jpg)
+This option automates the creation of a minimal JPEG structure within the secure system path and injects an encrypted payload.
+
+1. Enter the number `2` in the terminal.
+2. Enter the name of the file you wish to generate (example: `secret.jpg`). The program will automatically locate it at `/root/.kryptotex/secret.jpg`.
+3. Type the text content you want to hide inside the container.
+4. Define a password that meets the mandatory strength standards.
+5. The system will generate the file, inject the metadata, and display the resulting encrypted block in hexadecimal format.
+
+---
+
+### Option 3: Edit File (jpg)
+This option allows modifying or completely replacing the hidden message in the file specified in the initial execution argument (`argv[1]`).
+
+1. Enter the number `3` in the terminal.
+2. The engine will immediately invoke an `ftruncate` call via the file descriptor, cutting the stream exactly after the `0xFFD9` marker. Any prior information will be physically destroyed.
+3. Enter the new secret text.
+4. Enter the new encryption password.
+5. The system will apply the new encryption and save the updated block and forget user password immediately.
 
 ---
 
@@ -63,12 +110,14 @@ sudo pacman -Syu libsodium valgrind base-devel
 
 # Clone the repository
 git clone [https://github.com/JBHCK32/Krypto_Tex.git](https://github.com/JBHCK32/Krypto_Tex.git)
-cd Krypto_Tex/Proto-2
+cd Krypto_Tex/Proto-3
 
 # Compile the cryptographic engine prototype
-gcc main.c -o kryptotex -lsodium
+ggcc -Wall -Wextra -Werror -O2     -fstack-protector-strong     -D_FORTIFY_SOURCE=3     -fPIE -pie     -Wl,-z,relro,-z,now     -Wl,-z,noexecstack     prototipo_metadatos.c -o kryptotex -lsodium
 
 # Run under Valgrind monitoring to verify memory hygiene
-valgrind --leak-check=full --show-leak-kinds=all ./kryptotex
+sudo -E valgrind --leak-check=full ./kryptotex file.jpg
+
+```
 
 
