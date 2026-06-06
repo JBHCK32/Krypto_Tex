@@ -96,7 +96,7 @@ This option allows modifying or completely replacing the hidden message in the f
 2. The engine will immediately invoke an `ftruncate` call via the file descriptor, cutting the stream exactly after the `0xFFD9` marker. Any prior information will be physically destroyed.
 3. Enter the new secret text.
 4. Enter the new encryption password.
-5. The system will apply the new encryption and save the updated block and forget user password immediately.
+5. The system will apply the new encryption and save the updated block and purges the encryption password from volatile memory.
 
 ---
 
