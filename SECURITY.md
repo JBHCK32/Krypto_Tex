@@ -12,21 +12,6 @@ Security maintenance and vulnerability investigations are strictly restricted to
 | **Proto-2 (Crypto Core)**|  Stable / Secondary | Core Cryptographic Engine primitives (Libsodium `crypto_secretbox_easy`, Argon2id `crypto_pwhash`, volatile RAM registers). |
 | **Proto-1 (I/O Base)** |  End-of-Life (EOL)  | Basic `FILE *` management and unencrypted dynamic file system path operations. |
 
-## Threat Landscape & Vulnerability Classification
-
-We assess and prioritize security engineering flaws according to their impact on the platform's core runtime parameters: Volatile Anti-Forensics, Cryptographic Authenticated Integrity, and Steganographic Containment.
-
-### 1. Critical Impact
-* **Cryptographic Primitive Failure:** Weak or predictable nonces, mathematical flaws in the Argon2id key derivation configuration, or improper validation of Poly1305 MAC tags.
-* **Volatile Memory Exposure:** Failure of `sodium_memzero` to clear plaintext secrets, keys, or password buffers in volatile memory space prior to `free()` calls, introducing memory-dump or cold-boot exposure risks.
-
-### 2. High Impact
-* **Metadata Parser Exploitation:** Vulnerabilities within Proto-3's direct byte-level traversal engines, such as buffer overflows or boundary over-reads when evaluating the JPEG End-of-Image (EOI) `0xFFD9` marker.
-* **Heap/Stack Exploitation:** Memory corruption flaws verified under Valgrind, arbitrary code execution surfaces via file input operations (`fgets`, argument parameters), or descriptor allocation collisions during `ftruncate` execution.
-
-### 3. Medium Impact
-* **Isolation Layer Escapes:** Flaws allowing the binary to interact with file descriptors outside the designated `/root/.kryptotex/` storage boundary while operating under administrative privileges (`sudo`).
-* **Input Validation Exceptions:** Improper handling of trailing string termination (`\n` or `\0`) that could trigger non-fatal over-reads during local diagnostic hexadecimal serialization.
 
 ## Coordinated Disclosure Protocol
 
