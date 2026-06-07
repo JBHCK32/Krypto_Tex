@@ -164,7 +164,7 @@ int encryption_text(const char *route_file, char *pwd, const char *message, size
 
         return (1); 
     }
-
+    
     pwd[str_cspn(pwd, "\n")] = '\0';
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -972,7 +972,12 @@ int main(int argc, char *argv[]) {
             // Securely get the password with fgets.
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
             char pwd[max_range_pwd];
-            printf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+            printf("\e[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
+            printf("\e[35m[\e[0m\e[32mWARNING\e[30m\e[35m]\e[0m\e[32m: This application does not store or recover passwords. \e[0m");
+            printf("\e[32m\nThe key you enter exists only in volatile memory and is purged immediately after use.\e[0m");
+            printf("\e[32m\nIf you lose this password, your encrypted data will be permanently inaccessible.\e[0m");
+            printf("\e[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
+
             printf("[>] Now enter a secure password for your file: ");
 
             if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
