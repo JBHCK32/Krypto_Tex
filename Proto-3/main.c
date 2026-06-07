@@ -234,7 +234,7 @@ int decryption_text(const char *filename) {
     // Verify that the file opened successfully.
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if (file == NULL) {
-        fprintf(stderr, "\n[ERROR]: Error opening file\n");
+        fprintf(stderr, "\n[ERROR]: Error opening file due to lack of privileges or non-existent file\n");
         return (1);
     }
 
@@ -431,7 +431,7 @@ int creation_jpg(char *route_file) {
     // Verify that the file opened successfully.
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if (file == NULL) {
-        fprintf(stderr, "\n[ERROR]: Error creating the container file.\n");
+        fprintf(stderr, "\n[ERROR]: Error creating the container file due to lack of privileges or non-existent file.\n");
         return (1);
     }
 
@@ -614,7 +614,7 @@ bool content_removal(char *route_file) {
     // Safely verify if the file was opened correctly
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if (file == NULL) {
-        fprintf(stderr, "\n[ERROR]: Could not open the file %s for truncation.\n", route_file);
+        fprintf(stderr, "\n[ERROR]: Could not open the file %s for truncation due to lack of privileges or non-existent file.\n", route_file);
         return (false);
     }
 
@@ -941,9 +941,14 @@ int main(int argc, char *argv[]) {
 
             
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Process of removing previous file content.
+            // Process of removing previous file content an verification
+            // that the process is executed correctly.
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            content_removal(route_new_file);
+            if (!content_removal(route_new_file)) {
+                fprintf(stderr, "\n[ERROR]: There was an error in the truncation process because the file was non-existent or\n"); 
+                fprintf(stderr, "\nyou didn't have the necessary permissions (or simply an error of the truncation function).\n");
+                return (1);
+            }
 
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
             // Process of adding new content for the user.
