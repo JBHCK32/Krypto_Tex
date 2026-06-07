@@ -1,14 +1,50 @@
-cat <<EOF > .gitignore
-# the binary C
-proto_*
-a.out
-*.o
+# ==========================================
+# Krypto_Tex - Configuration & Ignore File
+# ==========================================
 
-# Files to vim and nvim
+# 1. Build Artifacts
+# ------------------------------------------
+# Binary executable
+kryptotex
+# Compilation objects
+*.o
+# Static and dynamic libraries
+*.a
+*.so
+*.dylib
+*.dll
+# Debug symbols
+*.dSYM
+
+# 2. System & Editor Files
+# ------------------------------------------
+# Configuration files for VS Code, Vim, JetBrains, etc.
+.vscode/
+.idea/
+.cache/
 *.swp
 *.swo
+*~
+# System files (macOS)
+.DS_Store
 
-# Depuration and logs
+# 3. Security & Sensitive Data (CRITICAL!)
+# ------------------------------------------
+# Never include user configuration directories or secrets
+/root/.kryptotex/
+.kryptotex/
+# Private keys, password files, or dumps
+*.key
+*.pem
+*.secret
 *.log
-valgrind.txt
-EOF
+
+# 4. Project Specific Artifacts
+# ------------------------------------------
+# Ignore test files that might contain actual encrypted data.
+# If you want to keep a "base image" for testing, track it manually, 
+# but avoid uploading any image containing sensitive data.
+*.jpg
+*.png
+*.jpeg
+
