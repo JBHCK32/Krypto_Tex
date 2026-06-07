@@ -112,8 +112,12 @@ sudo pacman -Syu libsodium valgrind base-devel
 git clone [https://github.com/JBHCK32/Krypto_Tex.git](https://github.com/JBHCK32/Krypto_Tex.git)
 cd Krypto_Tex/Proto-3
 
-# Compile the cryptographic engine prototype
+# Compile kryptotex|
 gcc -Wall -Wextra -Werror -O2     -fstack-protector-strong     -D_FORTIFY_SOURCE=3     -fPIE -pie     -Wl,-z,relro,-z,now     -Wl,-z,noexecstack     prototipo_metadatos.c -o kryptotex -lsodium
+
+# Give execute permissions only to sudo
+sudo chmod 700 kryptotex
+sudo chown root:root kryptotex
 
 # Run under Valgrind monitoring to verify memory hygiene
 sudo -E valgrind --leak-check=full ./kryptotex file.jpg

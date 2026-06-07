@@ -399,11 +399,11 @@ int decryption_text(const char *filename) {
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Display the decrypted content of the retrieved data.
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    printf("\n---------------------------------------\n");
-    printf(">> DECRYPTED FILE:\n");
-    printf("-----------------------------------------\n");
+    printf("\e[32m\n---------------------------------------\e[0m\n");
+    printf("\e[35m>>\e[0m \e[32mDECRYPTED FILE:\e[0m\n");
+    printf("\e[32m-----------------------------------------\e[0m\n");
     printf("%s\n", decryption);
-    printf("-----------------------------------------\n");
+    printf("\e[32m-----------------------------------------\e[0m\n");
 
     free(encryption); 
     free(decryption);
@@ -421,36 +421,7 @@ int decryption_text(const char *filename) {
 // ----------------------------------------------------------------------
 int creation_jpg(char *route_file) {
 
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // Verify that the shell is currently available.
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    if (system(NULL) == 0) {
-        fprintf(stderr, "[X] Error: The command processor (shell) is not available.\n");
-        return (1);
-    }
-
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // Execute this command to check if the .kryptotex directory exists;
-    // otherwise, create it manually.
-    //
-    // [INTENTIONAL DESIGN]: Execute environment setup via a static, hardcoded shell command.
-    // Because the command string is immutable and accepts zero user input, injection risks are 
-    // completely eliminated. This tool strictly mandates root execution for privilege isolation.
-    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    int ret = system("sudo ls /root/.kryptotex || sudo mkdir /root/.kryptotex");
-
-    if (ret == -1) {
-        fprintf(stderr, "[X] Critical error trying to invoke system()");
-    }
-    //  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    // Verify the exit code of the recently executed command.
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    if (WIFEXITED(ret) && WEXITSTATUS(ret) != 0) {
-        fprintf(stderr, "[!] The command terminated with a failure code: %d\n", WEXITSTATUS(ret));
-        return (1);
-    }
-
-    
+     
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Open the file in binary write mode ("wb")
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -702,6 +673,37 @@ bool content_removal(char *route_file) {
 
 int main(int argc, char *argv[]) {
 
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Verify that the shell is currently available.
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    if (system(NULL) == 0) {
+        fprintf(stderr, "[X] Error: The command processor (shell) is not available.\n");
+        return (1);
+    }
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Execute this command to check if the .kryptotex directory exists;
+    // otherwise, create it manually.
+    // The program runs strictly with sudo.
+    //
+    // [INTENTIONAL DESIGN]: Execute environment setup via a static, hardcoded shell command.
+    // Because the command string is immutable and accepts zero user input, injection risks are 
+    // completely eliminated. This tool strictly mandates root execution for privilege isolation.
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    int ret = system("sudo ls -d /root/.kryptotex || sudo mkdir /root/.kryptotex");
+
+    if (ret == -1) {
+        fprintf(stderr, "[X] Critical error trying to invoke system()");
+        return(1);
+    }
+    //  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Verify the exit code of the recently executed command.
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    if (WIFEXITED(ret) && WEXITSTATUS(ret) != 0) {
+        fprintf(stderr, "\n[ERROR]: The command terminated with a failure code or lack of privileges: %d\n", WEXITSTATUS(ret));
+        return (1);
+    }
+
     
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Verify that the user has the libsodium library.
@@ -832,7 +834,7 @@ int main(int argc, char *argv[]) {
             // Securely get user input with fgets to obtain their secret message.
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             char message[max_range_message];
-            printf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+            printf("\n++++++++++++++++++++++++++++++++++++++++++++++++++\n");
             printf("[+] Enter the content you want inside the file: \n");
 
             if (fgets(message, sizeof(message), stdin) == NULL) {
@@ -849,7 +851,12 @@ int main(int argc, char *argv[]) {
             // Securely get user input with fgets to obtain the user's password.
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             char pwd[max_range_pwd];
-            printf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+            printf("\e[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
+            printf("\e[35m[\e[0m\e[32mWARNING\e[30m\e[35m]\e[0m\e[32m: This application does not store or recover passwords. \e[0m");
+            printf("\e[32m\nThe key you enter exists only in volatile memory and is purged immediately after use.\e[0m");
+            printf("\e[32m\nIf you lose this password, your encrypted data will be permanently inaccessible.\e[0m");
+            printf("\e[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
+
             printf("[>] Now enter a secure password for your file: ");
 
             if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
@@ -900,6 +907,9 @@ int main(int argc, char *argv[]) {
 
         }
 
+        // +++++++++++++++++++++++++
+        // Option to edit a file.
+        // +++++++++++++++++++++++++
         else if (op[0] == '3') {
 
             op[0] = '\0';
