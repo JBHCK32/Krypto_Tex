@@ -13,7 +13,7 @@
 // ---------------------------------------------------------------------------------
 size_t str_len(const char *str) {
     size_t i = 0;
-    while(str[i] != '\0' && str[i] != '\n') { i++; }
+    while(str[i] != '\0') { i++; }
     return (i);
 }
 
@@ -33,9 +33,9 @@ void str_cat(char *origin, char *copy) {
     int i = 0;
     int j = 0;
 
-    while(origin[i] != '\0' && origin[i] != '\n') {i++;}
+    while(origin[i] != '\0') {i++;}
 
-    while(copy[j] != '\0' && copy[j] != '\n') {
+    while(copy[j] != '\0') {
         origin[i] = copy[j];
         i++;
         j++;
@@ -681,6 +681,8 @@ int main(int argc, char *argv[]) {
         return (1);
     }
 
+    const size_t max_range_message = 1000;
+
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Execute this command to check if the .kryptotex directory exists;
     // otherwise, create it manually.
@@ -826,24 +828,85 @@ int main(int argc, char *argv[]) {
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             creation_jpg(route_new_file);
 
-            sodium_memzero(filename, sizeof filename);
+            sodium_memzero(filename, sizeof filename); 
 
-            const size_t max_range_message = 1000;
-
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Securely get user input with fgets to obtain their secret message.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // Process of adding new content for the user:
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+            
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // Securely get the new content with fgets.
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             char message[max_range_message];
-            printf("\n++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-            printf("[+] Enter the content you want inside the file: \n");
+            printf("\n\e[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[32m\n");
+            printf(" \e[32m[Manual]: to stop writing and send the message all at once to be encrypted you need to use the [Ctrl + D]\n \e[0m");
+            printf("\e[32m key combination to stop writing and encrypt everything.\e[0m\n\n");
 
-            if (fgets(message, sizeof(message), stdin) == NULL) {
-                sodium_memzero(message, sizeof message);
+            printf("\e[35m [Warning]: If the content you enter exceeds the character limit which is %ld\n\e[0m", max_range_message);
+            printf("\e[35m then the program will ignore them and only write what is within that range.\e[0m");
+            printf("\n\e[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
 
-                return (1);
+            printf(" \n[+] Enter the content you want inside the file: \n");     
+
+            size_t current_len = 0;
+            char line[1024];
+
+            // ---------------------------------------------------------------------------
+            // While verifies the completion of the user's content with the EOF but 
+            // stops if the estimated buffer for the user's message is exceeded.
+            //
+            // This allows the user to write with line breaks and gives the user 
+            // the option to send the input with a combination of Ctrl + D.
+            // ---------------------------------------------------------------------------
+            while (current_len < (max_range_message - 1)) {
+                if (fgets(line, sizeof(line), stdin) == NULL) break;
+
+                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                // The idea is to read line by line of what the user writes. 
+                // We copy the line into the buffer
+                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                size_t line_len = 0;
+                line_len = str_len(line); 
+
+                // ++++++++++++++++++++++++++++++++++++++++++++++++
+                // We verify that what the user typed does not 
+                // exceed the buffer that was limited.
+                // ++++++++++++++++++++++++++++++++++++++++++++++++
+                if (current_len + line_len > (max_range_message - 1)) {
+                    printf("\n[!] Message limit reached.\n");
+                    break;
+                }
+ 
+                // ++++++++++++++++++++++++++++++++++++++++++++
+                // Otherwise, we copy line by line what the 
+                // user has written in the buffer message.
+                // ++++++++++++++++++++++++++++++++++++++++++++
+                for(size_t j = 0; j < line_len; j++) {
+                    message[current_len++] = line[j];
+                }
+
             }
 
-            message[str_cspn(message, "\n")] = '\0';
+            // ++++++++++++++++++++++++++++++++++++
+            // We put the obligatory finalizer
+            // ++++++++++++++++++++++++++++++++++++
+            message[current_len] = '\0';
+
+            // +++++++++++++++++++++++++++++++++++++++++++++
+            // We close the stdin entry of the program.
+            // +++++++++++++++++++++++++++++++++++++++++++++
+            if (feof(stdin)) {
+                clearerr(stdin);
+            } 
+
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // We reactivate the stdin entry in the active terminal that the user is using,
+            // but simply the program dies since we do not have access to the user's input.
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            if (freopen("/dev/tty", "r", stdin) == NULL) {
+                fprintf(stderr, "\n[ERROR]: the stdin could not be reopened, there was a problem in the process of reopening the user's input, ending the program...\n");
+                return (1);
+            }
 
             const size_t max_range_pwd = 256;
 
@@ -862,7 +925,7 @@ int main(int argc, char *argv[]) {
             if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
                 sodium_memzero(pwd, sizeof pwd);
                 sodium_memzero(message, sizeof message);
-
+                printf("\nocurrio un problema en el stdin de la contraseña");
                 return (1);
             }
 
@@ -877,10 +940,11 @@ int main(int argc, char *argv[]) {
             if (!secure_pwd) {
                 fprintf(stderr, "\n[ERROR]: Your password did not meet the minimum security requirements to encrypt the content.\n");
                 sodium_memzero(pwd, sizeof pwd);
-                sodium_memzero(message, sizeof message);
-
+                sodium_memzero(message, sizeof message); 
+            
                 return (1);
             }
+
 
             int message_len = str_len(message);
 
@@ -951,27 +1015,84 @@ int main(int argc, char *argv[]) {
             }
 
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Process of adding new content for the user.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // Process of adding new content for the user:
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
             
-            const size_t max_range_message = 1000;
-
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             // Securely get the new content with fgets.
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             char message[max_range_message];
-            printf("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-            printf("[+] Enter the content you want inside the file: \n");
+            printf("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+            printf(" [Manual]: to stop writing and send the message all at once to be encrypted you need to use the [Ctrl + D]\n ");
+            printf(" key combination to stop writing and encrypt everything.\n\n");
+            printf(" [Warning]: If the content you enter exceeds the character limit which is %ld\n", max_range_message);
+            printf(" then the program will ignore them and only write what is within that range.");
+            printf("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
-            if (fgets(message, sizeof(message), stdin) == NULL) {
-                sodium_memzero(message, sizeof message);
+            printf(" \n[+] Enter the content you want inside the file: \n");
 
+            size_t current_len = 0;
+            char line[1024];
+
+            // ---------------------------------------------------------------------------
+            // While verifies the completion of the user's content with the EOF but 
+            // stops if the estimated buffer for the user's message is exceeded.
+            //
+            // This allows the user to write with line breaks and gives the user 
+            // the option to send the input with a combination of Ctrl + D.
+            // ---------------------------------------------------------------------------
+            while (current_len < (max_range_message - 1)) {
+                if (fgets(line, sizeof(line), stdin) == NULL) break;
+
+                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                // The idea is to read line by line of what the user writes. 
+                // We copy the line into the buffer
+                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                size_t line_len = 0;
+                line_len = str_len(line); 
+
+                // ++++++++++++++++++++++++++++++++++++++++++++++++
+                // We verify that what the user typed does not 
+                // exceed the buffer that was limited.
+                // ++++++++++++++++++++++++++++++++++++++++++++++++
+                if (current_len + line_len > (max_range_message - 1)) {
+                    printf("\n[!] Message limit reached.\n");
+                    break;
+                }
+ 
+                // ++++++++++++++++++++++++++++++++++++++++++++
+                // Otherwise, we copy line by line what the 
+                // user has written in the buffer message.
+                // ++++++++++++++++++++++++++++++++++++++++++++
+                for(size_t j = 0; j < line_len; j++) {
+                    message[current_len++] = line[j];
+                }
+
+            }
+
+            // ++++++++++++++++++++++++++++++++++++
+            // We put the obligatory finalizer
+            // ++++++++++++++++++++++++++++++++++++
+            message[current_len] = '\0';
+
+            // +++++++++++++++++++++++++++++++++++++++++++++
+            // We close the stdin entry of the program.
+            // +++++++++++++++++++++++++++++++++++++++++++++
+            if (feof(stdin)) {
+                clearerr(stdin);
+            } 
+
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // We reactivate the stdin entry in the active terminal that the user is using,
+            // but simply the program dies since we do not have access to the user's input.
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            if (freopen("/dev/tty", "r", stdin) == NULL) {
+                fprintf(stderr, "\n[ERROR]: the stdin could not be reopened, there was a problem in the process of reopening the user's input, ending the program...\n");
                 return (1);
             }
 
-            message[str_cspn(message, "\n")] = '\0';
-    
-            const size_t max_range_pwd = 100;
+
+            const size_t max_range_pwd = 256;
 
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
             // Securely get the password with fgets.
@@ -1004,10 +1125,13 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "\n[ERROR]: Your password did not meet the minimum security requirements to encrypt the content.\n");
                 sodium_memzero(pwd, sizeof pwd);
                 sodium_memzero(message, sizeof message);
-
+                
                 return (1);
             }
 
+
+    
+           
             int message_len = str_len(message);
 
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
