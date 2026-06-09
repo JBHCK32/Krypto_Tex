@@ -681,7 +681,7 @@ int main(int argc, char *argv[]) {
         return (1);
     }
 
-    const size_t max_range_message = 1000;
+    const size_t max_range_message = 10000;
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Execute this command to check if the .kryptotex directory exists;

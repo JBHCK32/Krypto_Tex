@@ -81,10 +81,10 @@ This option extracts and decrypts the hidden content within the file specified i
 ### Option 2: Create a New File (jpg)
 This option automates the creation of a minimal JPEG structure within the secure system path and injects an encrypted payload.
 
-1. Enter the number `2` in the terminal.
-2. Enter the name of the file you wish to generate (example: `secret.jpg`). The program will automatically locate it at `/root/.kryptotex/secret.jpg`.
-3. Type the text content you want to hide inside the container.
-4. Define a password that meets the mandatory strength standards.
+1. **Enter the number `2`** in the terminal.
+2. **Enter the name of the file** you wish to generate (example: `secret.jpg`). The program will automatically locate it at `/root/.kryptotex/secret.jpg`.
+3. **Enter your secret message**. The input now supports **multiline text and pasting from external sources**. You can write as many lines as needed; once you have finished, press `Ctrl + D` to signal the end of the input and proceed to the password prompt.
+4. **Define a password** that meets the mandatory strength standards.
 5. The system will generate the file, inject the metadata, and display the resulting encrypted block in hexadecimal format.
 
 ---
@@ -92,15 +92,15 @@ This option automates the creation of a minimal JPEG structure within the secure
 ### Option 3: Edit File (jpg)
 This option allows modifying or completely replacing the hidden message in the file specified in the initial execution argument (`argv[1]`).
 
-1. Enter the number `3` in the terminal.
+1. **Enter the number `3`** in the terminal.
 2. The engine will immediately invoke an `ftruncate` call via the file descriptor, cutting the stream exactly after the `0xFFD9` marker. Any prior information will be physically destroyed.
-3. Enter the new secret text.
-4. Enter the new encryption password.
-5. The system will apply the new encryption and save the updated block and purges the encryption password from volatile memory.
+3. **Enter the new content** to replace the existing hidden message. This input supports **multiline text and pasting from external sources**. Finalize your input by pressing `Ctrl + D` to initiate the encryption of the new block.
+4. **Enter the new encryption password**.
+5. The system will apply the new encryption, save the updated block, and purge the encryption password from volatile memory.---
 
 ---
 
-## Installation & Compilation (Proto-2 Baseline)
+## Installation & Compilation (Proto-3 CLI version)
 
 Ensure `libsodium` and the standard development tools are present on your system before building:
 
@@ -109,18 +109,19 @@ Ensure `libsodium` and the standard development tools are present on your system
 sudo pacman -Syu libsodium valgrind base-devel
 
 # Clone the repository
-git clone [https://github.com/JBHCK32/Krypto_Tex.git](https://github.com/JBHCK32/Krypto_Tex.git)
+curl -L -O https://github.com/JBHCK32/Krypto_Tex/archive/refs/heads/master.zip
+unzip master.zip
 cd Krypto_Tex/Proto-3
 
-# Compile kryptotex|
-gcc -Wall -Wextra -Werror -O2     -fstack-protector-strong     -D_FORTIFY_SOURCE=3     -fPIE -pie     -Wl,-z,relro,-z,now     -Wl,-z,noexecstack     prototipo_metadatos.c -o kryptotex -lsodium
+# Compile kryptotex
+gcc -Wall -Wextra -Werror -O2     -fstack-protector-strong     -D_FORTIFY_SOURCE=3     -fPIE -pie     -Wl,-z,relro,-z,now     -Wl,-z,noexecstack     main.c -o kryptotex -lsodium
 
 # Give execute permissions only to sudo
 sudo chmod 700 kryptotex
 sudo chown root:root kryptotex
 
 # Run under Valgrind monitoring to verify memory hygiene
-sudo -E valgrind --leak-check=full ./kryptotex file.jpg
+sudo -E valgrind --leak-check=full ./kryptotex 
 
 ```
 
