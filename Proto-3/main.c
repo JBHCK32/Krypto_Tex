@@ -784,7 +784,7 @@ int main(int argc, char *argv[]) {
             int res_decrypt = decryption_text(route_new_file);
 
             if (res_decrypt == 1) {
-                fprintf(stderr, "[ERROR]: A problem occurred during file decryption...\n");
+                fprintf(stderr, "\n[ERROR]: A problem occurred during file decryption...\n");
             }
 
             // +++++++++++++++++++++++++
@@ -873,8 +873,18 @@ int main(int argc, char *argv[]) {
                 // exceed the buffer that was limited.
                 // ++++++++++++++++++++++++++++++++++++++++++++++++
                 if (current_len + line_len > (max_range_message - 1)) {
-                    printf("\n[!] Message limit reached.\n");
-                    break;
+                    
+                    line[0] = '\0';
+                    message[0] = '\0';
+                    clearerr(stdin);
+ 
+                    printf("\n\n[Critic Error]: Message limit reached: [%ld characters].\n", max_range_message);
+
+                    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    // Here we send a specific code of a buffer overflow, it is 
+                    // not a normal error but a special code that tells us what happened.
+                    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    return (101);
                 }
  
                 // ++++++++++++++++++++++++++++++++++++++++++++
@@ -904,7 +914,7 @@ int main(int argc, char *argv[]) {
             // but simply the program dies since we do not have access to the user's input.
             // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             if (freopen("/dev/tty", "r", stdin) == NULL) {
-                fprintf(stderr, "\n[ERROR]: the stdin could not be reopened, there was a problem in the process of reopening the user's input, ending the program...\n");
+                fprintf(stderr, "\n\n[ERROR]: the stdin could not be reopened, there was a problem in the process of reopening the user's input, ending the program...\n\n");
                 return (1);
             }
 
@@ -925,7 +935,7 @@ int main(int argc, char *argv[]) {
             if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
                 sodium_memzero(pwd, sizeof pwd);
                 sodium_memzero(message, sizeof message);
-                printf("\nocurrio un problema en el stdin de la contraseña");
+                printf("\n\n[ERROR]: A problem occurred in the password stdin\n\n");
                 return (1);
             }
 
@@ -1022,12 +1032,14 @@ int main(int argc, char *argv[]) {
             // Securely get the new content with fgets.
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             char message[max_range_message];
-            printf("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-            printf(" [Manual]: to stop writing and send the message all at once to be encrypted you need to use the [Ctrl + D]\n ");
-            printf(" key combination to stop writing and encrypt everything.\n\n");
-            printf(" [Warning]: If the content you enter exceeds the character limit which is %ld\n", max_range_message);
-            printf(" then the program will ignore them and only write what is within that range.");
-            printf("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+            printf("\n\e[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[32m\n");
+            printf(" \e[32m[Manual]: to stop writing and send the message all at once to be encrypted you need to use the [Ctrl + D]\n \e[0m");
+            printf("\e[32m key combination to stop writing and encrypt everything.\e[0m\n\n");
+
+            printf("\e[35m [Warning]: If the content you enter exceeds the character limit which is %ld\n\e[0m", max_range_message);
+            printf("\e[35m then the program will ignore them and only write what is within that range.\e[0m");
+            printf("\n\e[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
+
 
             printf(" \n[+] Enter the content you want inside the file: \n");
 
@@ -1056,8 +1068,17 @@ int main(int argc, char *argv[]) {
                 // exceed the buffer that was limited.
                 // ++++++++++++++++++++++++++++++++++++++++++++++++
                 if (current_len + line_len > (max_range_message - 1)) {
-                    printf("\n[!] Message limit reached.\n");
-                    break;
+                    line[0] = '\0';
+                    message[0] = '\0';
+                    clearerr(stdin);
+ 
+                    printf("\n\n[Critic Error]: Message limit reached: [%ld characters].\n", max_range_message);
+
+                    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    // Here we send a specific code of a buffer overflow, it is 
+                    // not a normal error but a special code that tells us what happened.
+                    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    return (101);
                 }
  
                 // ++++++++++++++++++++++++++++++++++++++++++++
@@ -1087,7 +1108,7 @@ int main(int argc, char *argv[]) {
             // but simply the program dies since we do not have access to the user's input.
             // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             if (freopen("/dev/tty", "r", stdin) == NULL) {
-                fprintf(stderr, "\n[ERROR]: the stdin could not be reopened, there was a problem in the process of reopening the user's input, ending the program...\n");
+                fprintf(stderr, "\n\n[ERROR]: the stdin could not be reopened, there was a problem in the process of reopening the user's input, ending the program...\n\n");
                 return (1);
             }
 
