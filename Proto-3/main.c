@@ -671,6 +671,113 @@ bool content_removal(char *route_file) {
 
 }
 
+// ------------------------------------------------------------------------------------------
+// This processes giant or small messages from the user in a secure and controlled manner.
+// ------------------------------------------------------------------------------------------
+int processing_message(const size_t max_range_message, char **message) {
+
+    size_t current_len = 0;
+    size_t max_range_line = 1024;
+    char line[max_range_line];
+
+    // ---------------------------------------------------------------------------
+    // While verifies the completion of the user's content with the EOF but 
+    // stops if the estimated buffer for the user's message is exceeded.
+    //
+    // This allows the user to write with line breaks and gives the user 
+    // the option to send the input with a combination of Ctrl + D.
+    // ---------------------------------------------------------------------------
+    while (true) {
+        if (fgets(line, sizeof(line), stdin) == NULL) {
+
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // We verify that the user's input if it is an EOF = (Ctrl + D).
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            if (feof(stdin)) {
+                clearerr(stdin);
+                return (0);
+            }
+
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // If it is not an EOF we simply stop because it could be any other error.
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            break;
+        };
+
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // The idea is to read line by line of what the user writes. 
+        // We copy the line into the buffer
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        size_t line_len = str_len(line);
+
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // We verify that the line typed by the user does not exceed the 
+        // estimated size and that it has a line separator[\n].        
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        bool line_too_long = (line_len == (sizeof(line) - 1) && line[line_len - 1] != '\n');
+        
+        
+
+        // ++++++++++++++++++++++++++++++++++++++++++++++++
+        // We verify that what the user typed does not 
+        // exceed the buffer that was limited.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++
+        if (current_len + line_len >= (max_range_message - 1) || line_too_long) {
+                    
+            line[0] = '\0';
+            (*message)[0] = '\0';
+
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // We close the user's stdin so as not to accept another input from it.
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            clearerr(stdin);
+
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // We check if the line of text written by the user is not too long, 
+            // if not, we return the buffer overflow error message.
+            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            if (line_too_long) {
+                fprintf(stderr, "\n\n\x1b[1;31m[Critic Error]:\x1b[0m\x1b[31m Line too long for internal buffer [limit: 1024 characteres].\x1b[0m\n");
+                return (101);
+            }
+
+            printf("\n\n\x1b[1;31m[Critic Error]:\x1b[0m\x1b[31m Message limit reached: [Limit: %ld characters].\x1b[0m\n", max_range_message);
+
+            
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            // Here we send a specific code of a buffer overflow, it is 
+            // not a normal error but a special code that tells us what happened.
+            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            return (101);
+        }
+ 
+        // ++++++++++++++++++++++++++++++++++++++++++++
+        // Otherwise, we copy line by line what the 
+        // user has written in the buffer message.
+        // ++++++++++++++++++++++++++++++++++++++++++++
+        for(size_t j = 0; j < line_len; j++) {
+            (*message)[current_len++] = line[j];
+        }
+
+    }
+
+    // ++++++++++++++++++++++++++++++++++++
+    // We put the obligatory finalizer
+    // ++++++++++++++++++++++++++++++++++++
+    (*message)[current_len] = '\0';
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // We reactivate the stdin entry in the active terminal that the user is using,
+    // but simply the program dies since we do not have access to the user's input.
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    if (freopen("/dev/tty", "r", stdin) == NULL) {
+        fprintf(stderr, "\n\n\x1b[31m[ERROR]: the stdin could not be reopened, there was a problem in the process of reopening the user's input, ending the program...\x1b[0m\n\n");
+        return (1);
+    }
+
+    return (0);
+}
+
 int main(int argc, char *argv[]) {
 
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -720,458 +827,426 @@ int main(int argc, char *argv[]) {
     
 
     
-        printf("\n\n");
-        printf("\e[35m██\e[0m\e[32m╗\e[0m  \e[35m██\e[0m\e[32m╗\e[0m\e[35m██████\e[0m\e[32m╗\e[0m \e[35m██\e[0m\e[32m╗\e[0m   \e[35m██\e[0m\e[32m╗\e[0m\e[35m██████\e[0m\e[32m╗ \e[35m████████\e[0m\e[32m╗\e[35m ██████\e[0m\e[32m╗ \e[0m    \e[35m████████\e[0m\e[32m╗\e[0m\e[35m███████\e[0m\e[32m╗\e[0m\e[35m██\e[0m\e[32m╗ \e[0m \e[35m██\e[0m\e[32m╗\e[0m\n");
-        printf("\e[35m██\e[32m║ \e[35m██\e[32m╔╝\e[35m██\e[32m╔══\e[35m██\e[32m╗╚\e[0m\e[35m██\e[32m╗ \e[35m██\e[32m╔╝\e[35m██\e[32m╔══\e[35m██\e[32m╗╚══\e[0m\e[35m██\e[32m╔══╝\e[35m██\e[32m╔═══\e[35m██\e[32m╗\e[0m    \e[32m╚══\e[35m██\e[32m╔══╝\e[35m██\e[32m╔════╝╚\e[0m\e[35m██\e[32m╗\e[35m██\e[32m╔╝\e[0m\n");
-        printf("\e[35m█████\e[32m╔╝ \e[35m██████\e[32m╔╝ \e[32m╚\e[35m████\e[32m╔╝ \e[35m██████\e[32m╔╝   \e[35m██\e[32m║   \e[35m██\e[32m║   \e[35m██\e[32m║\e[0m       \e[35m██\e[32m║   \e[35m█████\e[32m╗   \e[32m╚\e[35m███\e[32m╔╝ \e[0m\n");
-        printf("\e[35m██\e[32m╔═\e[35m██\e[32m╗ \e[35m██\e[32m╔══\e[35m██\e[32m╗  \e[32m╚\e[35m██\e[32m╔╝  \e[35m██\e[32m╔═══╝    \e[35m██\e[32m║   \e[35m██\e[32m║   \e[35m██\e[32m║\e[0m       \e[35m██\e[32m║   \e[35m██\e[32m╔══╝   \e[35m██\e[32m╔\e[35m██\e[32m╗ \e[0m\n");
-        printf("\e[35m██\e[32m║  \e[35m██\e[32m╗\e[35m██\e[32m║  \e[35m██\e[32m║   \e[35m██\e[32m║   \e[35m██\e[32m║        \e[35m██\e[32m║   \e[32m╚\e[35m██████\e[32m╔╝\e[0m       \e[35m██\e[32m║   \e[35m███████\e[32m╗\e[35m██\e[32m╔╝ \e[35m██\e[32m╗\e[0m\n");
-        printf("\e[32m╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝        ╚═╝    ╚═════╝ \e[0m       \e[32m╚═╝   ╚══════╝╚═╝  ╚═╝\e[0m\n");
-        printf("\n\n");
-        printf("\e[32m ── [ DATA CLOAKING SYSTEM by James] ─────────────────────────────────────── v0.1.0 ──\e[0m\n");
-        printf("\e[32m-------------------------------------------------------------------------------------------\e[0m\n");
-        printf("\e[35m[>]\e[0m \e[32mStatus: PRE-LIMINAR (Active Steneography mode))\e[0m\n");
-        printf("\e[35m[>]\e[0m \e[32mTarget: Custom User File via CLI\e[0m\n");
-        printf("\e[32m-------------------------------------------------------------------------------------------\e[0m\n");
-        printf("\e[35m1.\e[0m \e[32mOpen File(jpg)\e[0m\n");
-        printf("\e[35m2.\e[0m \e[32mCreate a new file(jpg)\e[0m\n");
-        printf("\e[35m3.\e[0m \e[32mEdit File(jpg)\e[0m\n");
+    printf("\n\n");
+    printf("\e[35m██\e[0m\e[32m╗\e[0m  \e[35m██\e[0m\e[32m╗\e[0m\e[35m██████\e[0m\e[32m╗\e[0m \e[35m██\e[0m\e[32m╗\e[0m   \e[35m██\e[0m\e[32m╗\e[0m\e[35m██████\e[0m\e[32m╗ \e[35m████████\e[0m\e[32m╗\e[35m ██████\e[0m\e[32m╗ \e[0m    \e[35m████████\e[0m\e[32m╗\e[0m\e[35m███████\e[0m\e[32m╗\e[0m\e[35m██\e[0m\e[32m╗ \e[0m \e[35m██\e[0m\e[32m╗\e[0m\n");
+    printf("\e[35m██\e[32m║ \e[35m██\e[32m╔╝\e[35m██\e[32m╔══\e[35m██\e[32m╗╚\e[0m\e[35m██\e[32m╗ \e[35m██\e[32m╔╝\e[35m██\e[32m╔══\e[35m██\e[32m╗╚══\e[0m\e[35m██\e[32m╔══╝\e[35m██\e[32m╔═══\e[35m██\e[32m╗\e[0m    \e[32m╚══\e[35m██\e[32m╔══╝\e[35m██\e[32m╔════╝╚\e[0m\e[35m██\e[32m╗\e[35m██\e[32m╔╝\e[0m\n");
+    printf("\e[35m█████\e[32m╔╝ \e[35m██████\e[32m╔╝ \e[32m╚\e[35m████\e[32m╔╝ \e[35m██████\e[32m╔╝   \e[35m██\e[32m║   \e[35m██\e[32m║   \e[35m██\e[32m║\e[0m       \e[35m██\e[32m║   \e[35m█████\e[32m╗   \e[32m╚\e[35m███\e[32m╔╝ \e[0m\n");
+    printf("\e[35m██\e[32m╔═\e[35m██\e[32m╗ \e[35m██\e[32m╔══\e[35m██\e[32m╗  \e[32m╚\e[35m██\e[32m╔╝  \e[35m██\e[32m╔═══╝    \e[35m██\e[32m║   \e[35m██\e[32m║   \e[35m██\e[32m║\e[0m       \e[35m██\e[32m║   \e[35m██\e[32m╔══╝   \e[35m██\e[32m╔\e[35m██\e[32m╗ \e[0m\n");
+    printf("\e[35m██\e[32m║  \e[35m██\e[32m╗\e[35m██\e[32m║  \e[35m██\e[32m║   \e[35m██\e[32m║   \e[35m██\e[32m║        \e[35m██\e[32m║   \e[32m╚\e[35m██████\e[32m╔╝\e[0m       \e[35m██\e[32m║   \e[35m███████\e[32m╗\e[35m██\e[32m╔╝ \e[35m██\e[32m╗\e[0m\n");
+    printf("\e[32m╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝        ╚═╝    ╚═════╝ \e[0m       \e[32m╚═╝   ╚══════╝╚═╝  ╚═╝\e[0m\n");
+    printf("\n\n");
+    printf("\e[32m ── [ DATA CLOAKING SYSTEM by James] ─────────────────────────────────────── v0.1.1 ──\e[0m\n");
+    printf("\e[32m-------------------------------------------------------------------------------------------\e[0m\n");
+    printf("\e[35m[>]\e[0m \e[32mStatus: PRE-LIMINAR (Active Steneography mode))\e[0m\n");
+    printf("\e[35m[>]\e[0m \e[32mTarget: Custom User File via CLI\e[0m\n");
+    printf("\e[32m-------------------------------------------------------------------------------------------\e[0m\n");
+    printf("\x1b[35m1.\x1b[0m \x1b[32mOpen File(jpg)\x1b[0m\n");
+    printf("\x1b[35m2.\x1b[0m \x1b[32mCreate a new file(jpg)\x1b[0m\n");
+    printf("\x1b[35m3.\x1b[0m \x1b[32mEdit File(jpg)\x1b[0m\n");
 
-        char op[4];
-        printf("\n\n\e[35m[\e[32m->\e[0m\e[35m]Option:\e[0m");
+    char op[4];
+    printf("\n\n\e[35m[\e[32m->\e[0m\e[35m]Option:\e[0m");
 
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++
-        // Get user input with fgets
-        // to choose the option they want to execute.
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++
-        if (fgets(op, sizeof(op), stdin) == NULL) {
-            op[0] = '\0';
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Get user input with fgets
+    // to choose the option they want to execute.
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++
+    if (fgets(op, sizeof(op), stdin) == NULL) {
+        op[0] = '\0';
+        return (1);
+    }
+        
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++
+    // Option to view file content.
+    // ++++++++++++++++++++++++++++++++++++++++++++++++
+    if (op[0] == '1' ) {
+
+        op[0] = '\0';
+
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Verify that the user has provided the path of the file they want to view.
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        if (argc < 2) {
+            fprintf(stderr, "[!] A path is required to view file content: %s /path/to/file.jpg", argv[0]);
             return (1);
         }
-        
 
-        // ++++++++++++++++++++++++++++++++++++++++++++++++
-        // Option to view file content.
-        // ++++++++++++++++++++++++++++++++++++++++++++++++
-        if (op[0] == '1' ) {
-
-            op[0] = '\0';
-
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Verify that the user has provided the path of the file they want to view.
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            if (argc < 2) {
-                fprintf(stderr, "[!] A path is required to view file content: %s /path/to/file.jpg", argv[0]);
-                return (1);
-            }
-
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Verify that the argument path respects the buffer limits.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            if (str_len(argv[1]) >= max_range_route_file) {
-                fprintf(stderr, "\n[ERROR]: The file path you entered is too large for the expected size.\n");
-                return (1);
-            }
-
-            char route_new_file[max_range_route_file];
-            route_new_file[0] = '\0';
-
-            str_cat(route_new_file, argv[1]);
-
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Activate the decryption process with the user's path.
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            int res_decrypt = decryption_text(route_new_file);
-
-            if (res_decrypt == 1) {
-                fprintf(stderr, "\n[ERROR]: A problem occurred during file decryption...\n");
-            }
-
-            // +++++++++++++++++++++++++
-            // Free memory.
-            // +++++++++++++++++++++++++
-            sodium_memzero(route_new_file, sizeof route_new_file);
-            sodium_memzero(op, sizeof op);
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Verify that the argument path respects the buffer limits.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        if (str_len(argv[1]) >= max_range_route_file) {
+            fprintf(stderr, "\n[ERROR]: The file path you entered is too large for the expected size.\n");
+            return (1);
         }
 
-        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        // Option for the user to create a new file.
-        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        else if (op[0] == '2') {
+        char route_new_file[max_range_route_file];
+        route_new_file[0] = '\0';
 
-            op[0] = '\0';
+        str_cat(route_new_file, argv[1]);
 
-            const size_t max_range_filename = 100;
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Activate the decryption process with the user's path.
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        int res_decrypt = decryption_text(route_new_file);
 
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Receive the name of the file the user wants to create.
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            char filename[max_range_filename];
-            printf("\n[>] Enter the name of the file you are going to create: ");
+        if (res_decrypt == 1) {
+            fprintf(stderr, "\n[ERROR]: A problem occurred during file decryption...\n");
+        }
 
-            if (fgets(filename, sizeof(filename), stdin) == NULL) {
-                sodium_memzero(filename, sizeof filename);
-                return (1);
-            }
+        // +++++++++++++++++++++++++
+        // Free memory.
+        // +++++++++++++++++++++++++
+        sodium_memzero(route_new_file, sizeof route_new_file);
+        sodium_memzero(op, sizeof op);
+    }
 
-            filename[str_cspn(filename, "\n")] = '\0';
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Option for the user to create a new file.
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    else if (op[0] == '2') {
 
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Get the default path of the new file created by the user.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            char route_new_file[118] = "/root/.kryptotex/";
+        op[0] = '\0';
+
+        const size_t max_range_filename = 100;
+
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Receive the name of the file the user wants to create.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        char filename[max_range_filename];
+        printf("\n[>] Enter the name of the file you are going to create: ");
+
+        if (fgets(filename, sizeof(filename), stdin) == NULL) {
+            sodium_memzero(filename, sizeof filename);
+            return (1);
+        }
+
+        filename[str_cspn(filename, "\n")] = '\0';
+
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Get the default path of the new file created by the user.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        char route_new_file[118] = "/root/.kryptotex/";
         
-            str_cat(route_new_file, filename);
+        str_cat(route_new_file, filename);
 
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Create the jpg file in the default secure path.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            creation_jpg(route_new_file);
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Create the jpg file in the default secure path.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        creation_jpg(route_new_file);
 
-            sodium_memzero(filename, sizeof filename); 
+        sodium_memzero(filename, sizeof filename); 
 
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Process of adding new content for the user:
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-            
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Securely get the new content with fgets.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            char message[max_range_message];
-            printf("\n\e[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[32m\n");
-            printf(" \e[32m[Manual]: to stop writing and send the message all at once to be encrypted you need to use the [Ctrl + D]\n \e[0m");
-            printf("\e[32m key combination to stop writing and encrypt everything.\e[0m\n\n");
+                        
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Securely get the new content with fgets.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        char *message = malloc(max_range_message * sizeof(char));
 
-            printf("\e[35m [Warning]: If the content you enter exceeds the character limit which is %ld\n\e[0m", max_range_message);
-            printf("\e[35m then the program will ignore them and only write what is within that range.\e[0m");
-            printf("\n\e[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
+        if (message == NULL) {
+            fprintf(stderr, "\n\n[ERROR]: Memory Allocation Error...\n\n");
+            return(1);
+        }
 
-            printf(" \n[+] Enter the content you want inside the file: \n");     
+        printf("\n\x1b[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\x1b[32m\n");
+        printf("[\x1b[1;32mManual\x1b[0m\x1b[32m]: to stop writing and send the message all at once to be encrypted you need to use the [Ctrl + D]\n \x1b[0m");
+        printf("\x1b[32mkey combination to stop writing and encrypt everything.\x1b[0m\n\n");
 
-            size_t current_len = 0;
-            char line[1024];
+        printf("[\x1b[1;35mWarning\x1b[0m]\x1b[35m: If the content you enter exceeds the character limit which is %ld\n\x1b[0m", max_range_message);
+        printf("\x1b[35mthen the program will ignore them and only write what is within that range.\x1b[0m");
+        printf("\n\x1b[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\x1b[0m\n");
 
-            // ---------------------------------------------------------------------------
-            // While verifies the completion of the user's content with the EOF but 
-            // stops if the estimated buffer for the user's message is exceeded.
-            //
-            // This allows the user to write with line breaks and gives the user 
-            // the option to send the input with a combination of Ctrl + D.
-            // ---------------------------------------------------------------------------
-            while (current_len < (max_range_message - 1)) {
-                if (fgets(line, sizeof(line), stdin) == NULL) break;
+        printf(" \x1b[36m\n[+] Enter the content you want inside the file: \x1b[0m\n");
 
-                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                // The idea is to read line by line of what the user writes. 
-                // We copy the line into the buffer
-                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                size_t line_len = 0;
-                line_len = str_len(line); 
+        int result;
 
-                // ++++++++++++++++++++++++++++++++++++++++++++++++
-                // We verify that what the user typed does not 
-                // exceed the buffer that was limited.
-                // ++++++++++++++++++++++++++++++++++++++++++++++++
-                if (current_len + line_len > (max_range_message - 1)) {
-                    
-                    line[0] = '\0';
-                    message[0] = '\0';
-                    clearerr(stdin);
- 
-                    printf("\n\n[Critic Error]: Message limit reached: [%ld characters].\n", max_range_message);
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // We obtain user information with a secure function 
+        // that checks for any buffer errors or stdin issues 
+        // the user is having.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        result = processing_message(max_range_message, &message);
+        
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // We verify that no error has occurred in the process of 
+        // obtaining the user's input.
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        if (result != 0) {
 
-                    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    // Here we send a specific code of a buffer overflow, it is 
-                    // not a normal error but a special code that tells us what happened.
-                    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    return (101);
-                }
- 
-                // ++++++++++++++++++++++++++++++++++++++++++++
-                // Otherwise, we copy line by line what the 
-                // user has written in the buffer message.
-                // ++++++++++++++++++++++++++++++++++++++++++++
-                for(size_t j = 0; j < line_len; j++) {
-                    message[current_len++] = line[j];
-                }
-
-            }
-
-            // ++++++++++++++++++++++++++++++++++++
-            // We put the obligatory finalizer
-            // ++++++++++++++++++++++++++++++++++++
-            message[current_len] = '\0';
-
-            // +++++++++++++++++++++++++++++++++++++++++++++
-            // We close the stdin entry of the program.
-            // +++++++++++++++++++++++++++++++++++++++++++++
-            if (feof(stdin)) {
-                clearerr(stdin);
-            } 
-
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // We reactivate the stdin entry in the active terminal that the user is using,
-            // but simply the program dies since we do not have access to the user's input.
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            if (freopen("/dev/tty", "r", stdin) == NULL) {
-                fprintf(stderr, "\n\n[ERROR]: the stdin could not be reopened, there was a problem in the process of reopening the user's input, ending the program...\n\n");
-                return (1);
-            }
-
-            const size_t max_range_pwd = 256;
-
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Securely get user input with fgets to obtain the user's password.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            char pwd[max_range_pwd];
-            printf("\e[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
-            printf("\e[35m[\e[0m\e[32mWARNING\e[30m\e[35m]\e[0m\e[32m: This application does not store or recover passwords. \e[0m");
-            printf("\e[32m\nThe key you enter exists only in volatile memory and is purged immediately after use.\e[0m");
-            printf("\e[32m\nIf you lose this password, your encrypted data will be permanently inaccessible.\e[0m");
-            printf("\e[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
-
-            printf("[>] Now enter a secure password for your file: ");
-
-            if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
-                sodium_memzero(pwd, sizeof pwd);
+            if (result == 101) {
                 sodium_memzero(message, sizeof message);
-                printf("\n\n[ERROR]: A problem occurred in the password stdin\n\n");
-                return (1);
+                free(message);
+                message = NULL;
+                return(101);
             }
 
-            pwd[str_cspn(pwd, "\n")] = '\0';
+            sodium_memzero(message, sizeof message);
+            free(message);
+            message = NULL;
 
+            return (1);
 
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Verify the security of the user's password;
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            bool secure_pwd = secure_password(pwd);
+        }
 
-            if (!secure_pwd) {
-                fprintf(stderr, "\n[ERROR]: Your password did not meet the minimum security requirements to encrypt the content.\n");
-                sodium_memzero(pwd, sizeof pwd);
-                sodium_memzero(message, sizeof message); 
             
-                return (1);
-            }
+        const size_t max_range_pwd = 256;
 
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Securely get user input with fgets to obtain the user's password.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        char pwd[max_range_pwd];
+        printf("\x1b[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\x1b[0m\n");
+        printf("\x1b[35m[\x1b[0m\x1b[1;32mWARNING\x1b[30m\e[35m]\x1b[0m\x1b[32m: This application does not store or recover passwords. \x1b[0m");
+        printf("\x1b[32m\nThe key you enter exists only in volatile memory and is purged immediately after use.\e[0m");
+        printf("\x1b[32m\nIf you lose this \x1b[1;32mpassword\x1b[0m, your encrypted data will be \x1b[1;32mpermanently inaccessible.\x1b[0m\x1b[0m");
+        printf("\x1b[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
 
-            int message_len = str_len(message);
+        printf("\x1b[36m[>] Now enter a secure password for your file: \x1b[0m");
 
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Pass everything to the encryption function and verify that everything
-            // went well.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            int res_encrypt = encryption_text(route_new_file, pwd, message, message_len);
-
+        if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
             sodium_memzero(pwd, sizeof pwd);
             sodium_memzero(message, sizeof message);
-            sodium_memzero(route_new_file, sizeof route_new_file);
-            message_len = 0;
+            printf("\n\n[ERROR]: A problem occurred in the password stdin\n\n");
+            return (1);
+        }
+
+        pwd[str_cspn(pwd, "\n")] = '\0';
 
 
-            if (res_encrypt != 0) {
-                fprintf(stderr, "\n[ERROR]: An error occurred during the encryption process.\n");
-                return (1);
-            }
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Verify the security of the user's password;
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        bool secure_pwd = secure_password(pwd);
 
-            message[0] = '\0';
+        if (!secure_pwd) {
+            fprintf(stderr, "\n[ERROR]: Your password did not meet the minimum security requirements to encrypt the content.\n");
+            sodium_memzero(pwd, sizeof pwd);
             pwd[0] = '\0';
-            filename[0] = '\0';
 
+            sodium_memzero(message, sizeof message);
+            free(message);
+            message = NULL;
+
+            
+            return (1);
         }
 
-        // +++++++++++++++++++++++++
-        // Option to edit a file.
-        // +++++++++++++++++++++++++
-        else if (op[0] == '3') {
 
-            op[0] = '\0';
+        int message_len = str_len(message);
 
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Verify that the user has provided a valid path to execute the function.
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            if (argc < 2) {
-                fprintf(stderr, "[!] A path is required to edit a file: %s /path/to/file.jpg", argv[0]);
-                return (1);
-            }
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Pass everything to the encryption function and verify that everything
+        // went well.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        int res_encrypt = encryption_text(route_new_file, pwd, message, message_len);
 
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Verify that the argument path respects the buffer limits.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            if (str_len(argv[1]) >= max_range_route_file) {
-                fprintf(stderr, "\n[ERROR]: The file path you entered is too large for the expected size.\n");
-                return (1);
-            }
+        sodium_memzero(pwd, sizeof pwd);
+        pwd[0] = '\0';
+        
+        sodium_memzero(message, sizeof message);
+        message[0] = '\0';
+        free(message);
+        
+        sodium_memzero(route_new_file, sizeof route_new_file);
+        route_new_file[0] = '\0';
 
-            // ++++++++++++++++++++++++++++++
-            // Inicialization variables.
-            // +++++++++++++++++++++++++++++++
-            char route_new_file[max_range_route_file];
+        message_len = 0;
+
+        filename[0] = '\0';
+
+
+        if (res_encrypt != 0) {
+            fprintf(stderr, "\n[ERROR]: An error occurred during the encryption process.\n");
+            return (1);
+        }
+
+        
+    }
+
+    // +++++++++++++++++++++++++
+    // Option to edit a file.
+    // +++++++++++++++++++++++++
+    else if (op[0] == '3') {
+
+        op[0] = '\0';
+
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Verify that the user has provided a valid path to execute the function.
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        if (argc < 2) {
+            fprintf(stderr, "[!] A path is required to edit a file: %s /path/to/file.jpg", argv[0]);
+            return (1);
+        }
+
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Verify that the argument path respects the buffer limits.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        if (str_len(argv[1]) >= max_range_route_file) {
+            fprintf(stderr, "\n[ERROR]: The file path you entered is too large for the expected size.\n");
+            return (1);
+        }
+
+        // ++++++++++++++++++++++++++++++
+        // Inicialization variables.
+        // +++++++++++++++++++++++++++++++
+        char route_new_file[max_range_route_file];
             
+        route_new_file[0] = '\0';
+
+        str_cat(route_new_file, argv[1]);
+
+            
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Process of removing previous file content an verification
+        // that the process is executed correctly.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        if (!content_removal(route_new_file)) {
+            route_new_file[0] = '\0';
+            fprintf(stderr, "\n[ERROR]: There was an error in the truncation process because the file was non-existent or\n"); 
+            fprintf(stderr, "\nyou didn't have the necessary permissions (or simply an error of the truncation function).\n");
+            return (1);
+        }
+
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Process of adding new content for the user:
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+            
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Securely get the new content with fgets.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        char *message = malloc(max_range_message * sizeof(char));
+
+        if (message == NULL) {
+            route_new_file[0] = '\0';      
+            fprintf(stderr, "\n\n[ERROR]: Memory Allocation Error...\n\n");
+            return(1);
+        }
+
+        printf("\n\x1b[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\x1b[32m\n");
+        printf("\x1b[32m[Manual]: to stop writing and send the message all at once to be encrypted you need to use the [Ctrl + D]\n \x1b[0m");
+        printf("\x1b[32mkey combination to stop writing and encrypt everything.\x1b[0m\n\n");
+
+        printf("\x1b[35m[Warning]: If the content you enter exceeds the character limit which is %ld\n\x1b[0m", max_range_message);
+        printf("\x1b[35mthen the program will ignore them and only write what is within that range.\x1b[0m");
+        printf("\n\x1b[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\x1b[0m\n");
+
+        printf(" \x1b[36m\n[+] Enter the content you want inside the file: \x1b[0m\n");
+
+
+
+        printf(" \n[+] Enter the content you want inside the file: \n");
+
+        int result;
+
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // We obtain user information with a secure function 
+        // that checks for any buffer errors or stdin issues 
+        // the user is having.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        result = processing_message(max_range_message, &message);
+        
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // We verify that no error has occurred in the process of 
+        // obtaining the user's input.
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        if (result != 0) {
+
+            if (result == 101) {
+                sodium_memzero(message, sizeof message);
+                free(message);
+                message = NULL;
+
+                route_new_file[0] = '\0';
+
+                return(101);
+            }
+
+            sodium_memzero(message, sizeof message);
+            free(message);
+            message = NULL;
+
             route_new_file[0] = '\0';
 
-            str_cat(route_new_file, argv[1]);
+            return (1);
 
-            
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Process of removing previous file content an verification
-            // that the process is executed correctly.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            if (!content_removal(route_new_file)) {
-                fprintf(stderr, "\n[ERROR]: There was an error in the truncation process because the file was non-existent or\n"); 
-                fprintf(stderr, "\nyou didn't have the necessary permissions (or simply an error of the truncation function).\n");
-                return (1);
-            }
-
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Process of adding new content for the user:
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
-            
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Securely get the new content with fgets.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            char message[max_range_message];
-            printf("\n\e[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[32m\n");
-            printf(" \e[32m[Manual]: to stop writing and send the message all at once to be encrypted you need to use the [Ctrl + D]\n \e[0m");
-            printf("\e[32m key combination to stop writing and encrypt everything.\e[0m\n\n");
-
-            printf("\e[35m [Warning]: If the content you enter exceeds the character limit which is %ld\n\e[0m", max_range_message);
-            printf("\e[35m then the program will ignore them and only write what is within that range.\e[0m");
-            printf("\n\e[32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
-
-
-            printf(" \n[+] Enter the content you want inside the file: \n");
-
-            size_t current_len = 0;
-            char line[1024];
-
-            // ---------------------------------------------------------------------------
-            // While verifies the completion of the user's content with the EOF but 
-            // stops if the estimated buffer for the user's message is exceeded.
-            //
-            // This allows the user to write with line breaks and gives the user 
-            // the option to send the input with a combination of Ctrl + D.
-            // ---------------------------------------------------------------------------
-            while (current_len < (max_range_message - 1)) {
-                if (fgets(line, sizeof(line), stdin) == NULL) break;
-
-                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                // The idea is to read line by line of what the user writes. 
-                // We copy the line into the buffer
-                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                size_t line_len = 0;
-                line_len = str_len(line); 
-
-                // ++++++++++++++++++++++++++++++++++++++++++++++++
-                // We verify that what the user typed does not 
-                // exceed the buffer that was limited.
-                // ++++++++++++++++++++++++++++++++++++++++++++++++
-                if (current_len + line_len > (max_range_message - 1)) {
-                    line[0] = '\0';
-                    message[0] = '\0';
-                    clearerr(stdin);
- 
-                    printf("\n\n[Critic Error]: Message limit reached: [%ld characters].\n", max_range_message);
-
-                    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    // Here we send a specific code of a buffer overflow, it is 
-                    // not a normal error but a special code that tells us what happened.
-                    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                    return (101);
-                }
- 
-                // ++++++++++++++++++++++++++++++++++++++++++++
-                // Otherwise, we copy line by line what the 
-                // user has written in the buffer message.
-                // ++++++++++++++++++++++++++++++++++++++++++++
-                for(size_t j = 0; j < line_len; j++) {
-                    message[current_len++] = line[j];
-                }
-
-            }
-
-            // ++++++++++++++++++++++++++++++++++++
-            // We put the obligatory finalizer
-            // ++++++++++++++++++++++++++++++++++++
-            message[current_len] = '\0';
-
-            // +++++++++++++++++++++++++++++++++++++++++++++
-            // We close the stdin entry of the program.
-            // +++++++++++++++++++++++++++++++++++++++++++++
-            if (feof(stdin)) {
-                clearerr(stdin);
-            } 
-
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // We reactivate the stdin entry in the active terminal that the user is using,
-            // but simply the program dies since we do not have access to the user's input.
-            // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            if (freopen("/dev/tty", "r", stdin) == NULL) {
-                fprintf(stderr, "\n\n[ERROR]: the stdin could not be reopened, there was a problem in the process of reopening the user's input, ending the program...\n\n");
-                return (1);
-            }
-
-
-            const size_t max_range_pwd = 256;
-
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Securely get the password with fgets.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            char pwd[max_range_pwd];
-            printf("\e[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
-            printf("\e[35m[\e[0m\e[32mWARNING\e[30m\e[35m]\e[0m\e[32m: This application does not store or recover passwords. \e[0m");
-            printf("\e[32m\nThe key you enter exists only in volatile memory and is purged immediately after use.\e[0m");
-            printf("\e[32m\nIf you lose this password, your encrypted data will be permanently inaccessible.\e[0m");
-            printf("\e[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
-
-            printf("[>] Now enter a secure password for your file: ");
-
-            if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
-                sodium_memzero(pwd, sizeof pwd);
-                sodium_memzero(message, sizeof message);
-
-                return (1);
-            }
-
-            pwd[str_cspn(pwd, "\n")] = '\0'; // This is done to remove the trailing newline character left by fgets.
-
-
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // Verify the security of the user's password;
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            bool secure_pwd = secure_password(pwd);
-
-            if (!secure_pwd) {
-                fprintf(stderr, "\n[ERROR]: Your password did not meet the minimum security requirements to encrypt the content.\n");
-                sodium_memzero(pwd, sizeof pwd);
-                sodium_memzero(message, sizeof message);
-                
-                return (1);
-            }
-
-
-    
-           
-            int message_len = str_len(message);
-
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            // And pass everything to the user content encryption function.
-            // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            int res_encrypt = encryption_text(route_new_file, pwd, message, message_len);
-            
-            sodium_memzero(pwd, sizeof pwd);
-            sodium_memzero(message, sizeof message);
-            sodium_memzero(route_new_file, sizeof route_new_file);
-            message_len = 0;
-    
-
-
-            if (res_encrypt != 0) {
-                fprintf(stderr, "\n[ERROR]: An error occurred during the encryption process.\n");
-                return (1);
-            }
         }
+
+        const size_t max_range_pwd = 256;
+
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Securely get the password with fgets.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        char pwd[max_range_pwd];
+        printf("\x1b[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\x1b[0m\n");
+        printf("\x1b[35m[\x1b[0m\x1b[1;32mWARNING\x1b[30m\e[35m]\x1b[0m\x1b[32m: This application does not store or recover passwords. \x1b[0m");
+        printf("\x1b[32m\nThe key you enter exists only in volatile memory and is purged immediately after use.\e[0m");
+        printf("\x1b[32m\nIf you lose this \x1b[1;32mpassword\x1b[0m, your encrypted data will be \x1b[1;32mpermanently inaccessible.\x1b[0m\x1b[0m");
+        printf("\x1b[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
+
+        printf("\x1b[36m[>] Now enter a secure password for your file: \x1b[0m");
+
+        if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
+            sodium_memzero(pwd, sizeof pwd);
+            pwd[0] = '\0';;
+
+            sodium_memzero(message, sizeof message);
+            free(message);
+            message = NULL;
+
+            route_new_file[0] = '\0';
+
+            return (1);
+        }
+
+        pwd[str_cspn(pwd, "\n")] = '\0'; // This is done to remove the trailing newline character left by fgets.
+
+
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // Verify the security of the user's password;
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        bool secure_pwd = secure_password(pwd);
+
+        if (!secure_pwd) {
+            fprintf(stderr, "\n[ERROR]: Your password did not meet the minimum security requirements to encrypt the content.\n");
+            sodium_memzero(pwd, sizeof pwd);
+            pwd[0] = '\0';
+
+            sodium_memzero(message, sizeof message);
+            free(message);
+            message = NULL;
+
+            route_new_file[0] = '\0';
+                
+            return (1);
+        }
+ 
+           
+        int message_len = str_len(message);
+
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // And pass everything to the user content encryption function.
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        int res_encrypt = encryption_text(route_new_file, pwd, message, message_len);
+            
+        sodium_memzero(pwd, sizeof pwd);
+        pwd[0] = '\0';
+        
+        sodium_memzero(message, sizeof message);
+        message[0] = '\0';
+        free(message);
+        
+        sodium_memzero(route_new_file, sizeof route_new_file);
+        route_new_file[0] = '\0';
+
+        message_len = 0; 
+
+        if (res_encrypt != 0) {
+            fprintf(stderr, "\n[ERROR]: An error occurred during the encryption process.\n");
+            return (1);
+        }
+
+        return(0);
+    }
 
 
     return (0);
