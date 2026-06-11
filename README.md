@@ -111,7 +111,7 @@ sudo pacman -Syu libsodium valgrind base-devel
 # Clone the repository
 curl -L -O https://github.com/JBHCK32/Krypto_Tex/archive/refs/heads/master.zip
 unzip master.zip
-cd Krypto_Tex/Proto-3
+cd Krypto_Tex-*/Proto-3
 
 # Compile kryptotex
 gcc -Wall -Wextra -Werror -O2     -fstack-protector-strong     -D_FORTIFY_SOURCE=3     -fPIE -pie     -Wl,-z,relro,-z,now     -Wl,-z,noexecstack     main.c -o kryptotex -lsodium
