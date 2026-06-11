@@ -679,6 +679,7 @@ int processing_message(const size_t max_range_message, char **message) {
     size_t current_len = 0;
     size_t max_range_line = 1024;
     char line[max_range_line];
+    line[0] = '\0';
 
     // ---------------------------------------------------------------------------
     // While verifies the completion of the user's content with the EOF but 
@@ -844,7 +845,7 @@ int main(int argc, char *argv[]) {
     printf("\x1b[35m2.\x1b[0m \x1b[32mCreate a new file(jpg)\x1b[0m\n");
     printf("\x1b[35m3.\x1b[0m \x1b[32mEdit File(jpg)\x1b[0m\n");
 
-    char op[4];
+    char op[4] = {0};
     printf("\n\n\e[35m[\e[32m->\e[0m\e[35m]Option:\e[0m");
 
     // +++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -882,7 +883,7 @@ int main(int argc, char *argv[]) {
 
         char route_new_file[max_range_route_file];
         route_new_file[0] = '\0';
-
+                
         str_cat(route_new_file, argv[1]);
 
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -914,6 +915,8 @@ int main(int argc, char *argv[]) {
         // Receive the name of the file the user wants to create.
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         char filename[max_range_filename];
+        filename[0] = '\0';
+
         printf("\n[>] Enter the name of the file you are going to create: ");
 
         if (fgets(filename, sizeof(filename), stdin) == NULL) {
@@ -995,7 +998,9 @@ int main(int argc, char *argv[]) {
         // Securely get user input with fgets to obtain the user's password.
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         char pwd[max_range_pwd];
-        printf("\x1b[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\x1b[0m\n");
+        pwd[0] = '\0';
+
+        printf("\x1b[35m\n\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\x1b[0m\n");
         printf("\x1b[35m[\x1b[0m\x1b[1;32mWARNING\x1b[30m\e[35m]\x1b[0m\x1b[32m: This application does not store or recover passwords. \x1b[0m");
         printf("\x1b[32m\nThe key you enter exists only in volatile memory and is purged immediately after use.\e[0m");
         printf("\x1b[32m\nIf you lose this \x1b[1;32mpassword\x1b[0m, your encrypted data will be \x1b[1;32mpermanently inaccessible.\x1b[0m\x1b[0m");
@@ -1090,9 +1095,8 @@ int main(int argc, char *argv[]) {
         // Inicialization variables.
         // +++++++++++++++++++++++++++++++
         char route_new_file[max_range_route_file];
-            
         route_new_file[0] = '\0';
-
+            
         str_cat(route_new_file, argv[1]);
 
             
@@ -1132,9 +1136,6 @@ int main(int argc, char *argv[]) {
 
         printf(" \x1b[36m\n[+] Enter the content you want inside the file: \x1b[0m\n");
 
-
-
-        printf(" \n[+] Enter the content you want inside the file: \n");
 
         int result;
 
@@ -1177,6 +1178,8 @@ int main(int argc, char *argv[]) {
         // Securely get the password with fgets.
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
         char pwd[max_range_pwd];
+        pwd[0] = '\0';
+
         printf("\x1b[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\x1b[0m\n");
         printf("\x1b[35m[\x1b[0m\x1b[1;32mWARNING\x1b[30m\e[35m]\x1b[0m\x1b[32m: This application does not store or recover passwords. \x1b[0m");
         printf("\x1b[32m\nThe key you enter exists only in volatile memory and is purged immediately after use.\e[0m");
