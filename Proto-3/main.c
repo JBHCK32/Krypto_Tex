@@ -13,7 +13,7 @@
 // ---------------------------------------------------------------------------------
 size_t str_len(const char *str) {
     size_t i = 0;
-    while(str[i] != '\0') { i++; }
+    while(str[i] != '\0' && str[i]) { i++; }
     return (i);
 }
 
@@ -831,16 +831,16 @@ int main(int argc, char *argv[]) {
     printf("\n\n");
     printf("\e[35m██\e[0m\e[32m╗\e[0m  \e[35m██\e[0m\e[32m╗\e[0m\e[35m██████\e[0m\e[32m╗\e[0m \e[35m██\e[0m\e[32m╗\e[0m   \e[35m██\e[0m\e[32m╗\e[0m\e[35m██████\e[0m\e[32m╗ \e[35m████████\e[0m\e[32m╗\e[35m ██████\e[0m\e[32m╗ \e[0m    \e[35m████████\e[0m\e[32m╗\e[0m\e[35m███████\e[0m\e[32m╗\e[0m\e[35m██\e[0m\e[32m╗ \e[0m \e[35m██\e[0m\e[32m╗\e[0m\n");
     printf("\e[35m██\e[32m║ \e[35m██\e[32m╔╝\e[35m██\e[32m╔══\e[35m██\e[32m╗╚\e[0m\e[35m██\e[32m╗ \e[35m██\e[32m╔╝\e[35m██\e[32m╔══\e[35m██\e[32m╗╚══\e[0m\e[35m██\e[32m╔══╝\e[35m██\e[32m╔═══\e[35m██\e[32m╗\e[0m    \e[32m╚══\e[35m██\e[32m╔══╝\e[35m██\e[32m╔════╝╚\e[0m\e[35m██\e[32m╗\e[35m██\e[32m╔╝\e[0m\n");
-    printf("\e[35m█████\e[32m╔╝ \e[35m██████\e[32m╔╝ \e[32m╚\e[35m████\e[32m╔╝ \e[35m██████\e[32m╔╝   \e[35m██\e[32m║   \e[35m██\e[32m║   \e[35m██\e[32m║\e[0m       \e[35m██\e[32m║   \e[35m█████\e[32m╗   \e[32m╚\e[35m███\e[32m╔╝ \e[0m\n");
-    printf("\e[35m██\e[32m╔═\e[35m██\e[32m╗ \e[35m██\e[32m╔══\e[35m██\e[32m╗  \e[32m╚\e[35m██\e[32m╔╝  \e[35m██\e[32m╔═══╝    \e[35m██\e[32m║   \e[35m██\e[32m║   \e[35m██\e[32m║\e[0m       \e[35m██\e[32m║   \e[35m██\e[32m╔══╝   \e[35m██\e[32m╔\e[35m██\e[32m╗ \e[0m\n");
-    printf("\e[35m██\e[32m║  \e[35m██\e[32m╗\e[35m██\e[32m║  \e[35m██\e[32m║   \e[35m██\e[32m║   \e[35m██\e[32m║        \e[35m██\e[32m║   \e[32m╚\e[35m██████\e[32m╔╝\e[0m       \e[35m██\e[32m║   \e[35m███████\e[32m╗\e[35m██\e[32m╔╝ \e[35m██\e[32m╗\e[0m\n");
-    printf("\e[32m╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝        ╚═╝    ╚═════╝ \e[0m       \e[32m╚═╝   ╚══════╝╚═╝  ╚═╝\e[0m\n");
+    printf("\x1b[35m█████\x1b[32m╔╝ \x1b[35m██████\x1b[32m╔╝ \x1b[32m╚\x1b[35m████\x1b[32m╔╝ \x1b[35m██████\x1b[32m╔╝   \x1b[35m██\x1b[32m║   \x1b[35m██\x1b[32m║   \e[35m██\e[32m║\e[0m       \e[35m██\e[32m║   \e[35m█████\e[32m╗   \e[32m╚\e[35m███\e[32m╔╝ \e[0m\n");
+    printf("\x1b[35m██\x1b[32m╔═\x1b[35m██\x1b[32m╗ \x1b[35m██\x1b[32m╔══\x1b[35m██\x1b[32m╗  \x1b[32m╚\x1b[35m██\x1b[32m╔╝  \x1b[35m██\x1b[32m╔═══╝    \x1b[35m██\x1b[32m║   \x1b[35m██\x1b[32m║   \x1b[35m██\x1b[32m║\x1b[0m       \x1b[35m██\x1b[32m║   \x1b[35m██\x1b[32m╔══╝   \x1b[35m██\x1b[32m╔\x1b[35m██\x1b[32m╗ \x1b[0m\n");
+    printf("\x1b[35m██\x1b[32m║  \x1b[35m██\x1b[32m╗\x1b[35m██\x1b[32m║  \x1b[35m██\x1b[32m║   \x1b[35m██\x1b[32m║   \x1b[35m██\x1b[32m║        \x1b[35m██\x1b[32m║   \x1b[32m╚\x1b[35m██████\x1b[32m╔╝\x1b[0m       \x1b[35m██\x1b[32m║   \x1b[35m███████\x1b[32m╗\x1b[35m██\x1b[32m╔╝ \x1b[35m██\x1b[32m╗\x1b[0m\n");
+    printf("\x1b[32m╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝        ╚═╝    ╚═════╝ \x1b[0m       \x1b[32m╚═╝   ╚══════╝╚═╝  ╚═╝\x1b[0m\n");
     printf("\n\n");
-    printf("\e[32m ── [ DATA CLOAKING SYSTEM by James] ─────────────────────────────────────── v0.1.1 ──\e[0m\n");
-    printf("\e[32m-------------------------------------------------------------------------------------------\e[0m\n");
-    printf("\e[35m[>]\e[0m \e[32mStatus: PRE-LIMINAR (Active Steneography mode))\e[0m\n");
-    printf("\e[35m[>]\e[0m \e[32mTarget: Custom User File via CLI\e[0m\n");
-    printf("\e[32m-------------------------------------------------------------------------------------------\e[0m\n");
+    printf("\x1b[32m ── [ DATA CLOAKING SYSTEM by James] ─────────────────────────────────────── v0.1.2 ──\x1b[0m\n");
+    printf("\x1b[32m-------------------------------------------------------------------------------------------\x1b[0m\n");
+    printf("\x1b[35m[>]\x1b[0m \x1b[32mStatus: PRE-LIMINAR (Active Steneography mode))\x1b[0m\n");
+    printf("\x1b[35m[>]\x1b[0m \x1b[32mTarget: Custom User File via CLI\x1b[0m\n");
+    printf("\x1b[32m-------------------------------------------------------------------------------------------\x1b[0m\n");
     printf("\x1b[35m1.\x1b[0m \x1b[32mOpen File(jpg)\x1b[0m\n");
     printf("\x1b[35m2.\x1b[0m \x1b[32mCreate a new file(jpg)\x1b[0m\n");
     printf("\x1b[35m3.\x1b[0m \x1b[32mEdit File(jpg)\x1b[0m\n");
@@ -899,6 +899,8 @@ int main(int argc, char *argv[]) {
         // Free memory.
         // +++++++++++++++++++++++++
         sodium_memzero(route_new_file, sizeof route_new_file);
+        route_new_file[0] = '\0';
+
         sodium_memzero(op, sizeof op);
     }
 
@@ -916,11 +918,13 @@ int main(int argc, char *argv[]) {
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         char filename[max_range_filename];
         filename[0] = '\0';
+        
 
         printf("\n[>] Enter the name of the file you are going to create: ");
 
         if (fgets(filename, sizeof(filename), stdin) == NULL) {
             sodium_memzero(filename, sizeof filename);
+            filename[0] = '\0';
             return (1);
         }
 
@@ -937,14 +941,14 @@ int main(int argc, char *argv[]) {
         // Create the jpg file in the default secure path.
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         creation_jpg(route_new_file);
-
-        sodium_memzero(filename, sizeof filename); 
+   
+        filename[0] = '\0';
 
                         
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // Securely get the new content with fgets.
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        char *message = malloc(max_range_message * sizeof(char));
+        char *message = calloc(max_range_message, sizeof(char));
 
         if (message == NULL) {
             fprintf(stderr, "\n\n[ERROR]: Memory Allocation Error...\n\n");
@@ -997,13 +1001,14 @@ int main(int argc, char *argv[]) {
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // Securely get user input with fgets to obtain the user's password.
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        char pwd[max_range_pwd];
+        char pwd[max_range_pwd];  
+
         pwd[0] = '\0';
 
         printf("\x1b[35m\n\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\x1b[0m\n");
         printf("\x1b[35m[\x1b[0m\x1b[1;32mWARNING\x1b[30m\e[35m]\x1b[0m\x1b[32m: This application does not store or recover passwords. \x1b[0m");
         printf("\x1b[32m\nThe key you enter exists only in volatile memory and is purged immediately after use.\e[0m");
-        printf("\x1b[32m\nIf you lose this \x1b[1;32mpassword\x1b[0m, your encrypted data will be \x1b[1;32mpermanently inaccessible.\x1b[0m\x1b[0m");
+        printf("\x1b[32m\nIf you lose this \x1b[1;32mpassword\x1b[0m\x1b[32m, your encrypted data will be \x1b[0m\x1b[1;32mpermanently inaccessible.\x1b[0m");
         printf("\x1b[35m\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\e[0m\n");
 
         printf("\x1b[36m[>] Now enter a secure password for your file: \x1b[0m");
@@ -1011,6 +1016,12 @@ int main(int argc, char *argv[]) {
         if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
             sodium_memzero(pwd, sizeof pwd);
             sodium_memzero(message, sizeof message);
+
+            pwd[0] = '\0';
+            free(message);
+
+            message = NULL;
+
             printf("\n\n[ERROR]: A problem occurred in the password stdin\n\n");
             return (1);
         }
@@ -1025,6 +1036,7 @@ int main(int argc, char *argv[]) {
 
         if (!secure_pwd) {
             fprintf(stderr, "\n[ERROR]: Your password did not meet the minimum security requirements to encrypt the content.\n");
+            
             sodium_memzero(pwd, sizeof pwd);
             pwd[0] = '\0';
 
@@ -1049,17 +1061,15 @@ int main(int argc, char *argv[]) {
         pwd[0] = '\0';
         
         sodium_memzero(message, sizeof message);
-        message[0] = '\0';
         free(message);
+        message = NULL;
         
         sodium_memzero(route_new_file, sizeof route_new_file);
         route_new_file[0] = '\0';
 
         message_len = 0;
 
-        filename[0] = '\0';
-
-
+        
         if (res_encrypt != 0) {
             fprintf(stderr, "\n[ERROR]: An error occurred during the encryption process.\n");
             return (1);
@@ -1118,7 +1128,7 @@ int main(int argc, char *argv[]) {
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // Securely get the new content with fgets.
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        char *message = malloc(max_range_message * sizeof(char));
+        char *message = calloc(max_range_message, sizeof(char));
 
         if (message == NULL) {
             route_new_file[0] = '\0';      
@@ -1190,8 +1200,8 @@ int main(int argc, char *argv[]) {
 
         if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
             sodium_memzero(pwd, sizeof pwd);
-            pwd[0] = '\0';;
-
+            pwd[0] = '\0';
+                        
             sodium_memzero(message, sizeof message);
             free(message);
             message = NULL;
@@ -1219,7 +1229,7 @@ int main(int argc, char *argv[]) {
             message = NULL;
 
             route_new_file[0] = '\0';
-                
+
             return (1);
         }
  
@@ -1235,8 +1245,8 @@ int main(int argc, char *argv[]) {
         pwd[0] = '\0';
         
         sodium_memzero(message, sizeof message);
-        message[0] = '\0';
         free(message);
+        message = NULL;
         
         sodium_memzero(route_new_file, sizeof route_new_file);
         route_new_file[0] = '\0';
