@@ -164,7 +164,7 @@ int encryption_text(const char *route_file, char *pwd, const char *message, size
 
         return (1); 
     }
-    
+
     pwd[str_cspn(pwd, "\n")] = '\0';
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1015,7 +1015,7 @@ int main(int argc, char *argv[]) {
 
         if (fgets(pwd, sizeof(pwd), stdin) == NULL) {
             sodium_memzero(pwd, sizeof pwd);
-            sodium_memzero(message, sizeof message);
+            sodium_memzero(message, max_range_message);
 
             pwd[0] = '\0';
             free(message);
@@ -1040,7 +1040,7 @@ int main(int argc, char *argv[]) {
             sodium_memzero(pwd, sizeof pwd);
             pwd[0] = '\0';
 
-            sodium_memzero(message, sizeof message);
+            sodium_memzero(message, max_range_message);
             free(message);
             message = NULL;
 
@@ -1060,7 +1060,7 @@ int main(int argc, char *argv[]) {
         sodium_memzero(pwd, sizeof pwd);
         pwd[0] = '\0';
         
-        sodium_memzero(message, sizeof message);
+        sodium_memzero(message, max_range_message);
         free(message);
         message = NULL;
         
@@ -1202,7 +1202,7 @@ int main(int argc, char *argv[]) {
             sodium_memzero(pwd, sizeof pwd);
             pwd[0] = '\0';
                         
-            sodium_memzero(message, sizeof message);
+            sodium_memzero(message, max_range_message);
             free(message);
             message = NULL;
 
@@ -1224,7 +1224,7 @@ int main(int argc, char *argv[]) {
             sodium_memzero(pwd, sizeof pwd);
             pwd[0] = '\0';
 
-            sodium_memzero(message, sizeof message);
+            sodium_memzero(message, max_range_message);
             free(message);
             message = NULL;
 
@@ -1244,7 +1244,7 @@ int main(int argc, char *argv[]) {
         sodium_memzero(pwd, sizeof pwd);
         pwd[0] = '\0';
         
-        sodium_memzero(message, sizeof message);
+        sodium_memzero(message, max_range_message);
         free(message);
         message = NULL;
         
