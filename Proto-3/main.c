@@ -13,7 +13,7 @@
 // ---------------------------------------------------------------------------------
 size_t str_len(const char *str) {
     size_t i = 0;
-    while(str[i] != '\0' && str[i]) { i++; }
+    while(str[i] != '\0') { i++; }
     return (i);
 }
 
@@ -631,6 +631,7 @@ bool content_removal(char *route_file) {
             // ftell gives us the current position (just after 0xD9)
             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             last_eoi_pos = ftell(file);
+            break;
         }
         prev_byte = current_byte;
     }
@@ -779,6 +780,63 @@ int processing_message(const size_t max_range_message, char **message) {
     return (0);
 }
 
+// -------------------------------------------------------------------
+// This function correctly processes the user's input when 
+// naming their file and handles dangerous errors for the program.
+// -------------------------------------------------------------------
+int processing_filename(const size_t max_range_filename, char **filename) {
+
+    // +++++++++++++++++++++++++++++++++++++++++++++
+    // We listen to the user's input using fgets.
+    // +++++++++++++++++++++++++++++++++++++++++++++
+    if (fgets(*filename, max_range_filename, stdin) == NULL) {
+        printf("\n\n[ERROR]:  User input error occurred.\n\n");
+        clearerr(stdin);
+        return (1);
+    }
+
+    const size_t len = str_len(*filename);
+    
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // We verify that what the user has typed does not exceed the 
+    // delimited buffer and that it does not cause any overflow.
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    if (len == max_range_filename - 1 && (*filename)[len - 1] != '\n') {
+        printf("\n\n\x1b[1;31m[ERROR]:\x1b[0m \x1b[31mThe name exceeds the maximum %ld characters.\x1b[0m\n", max_range_filename - 1);
+        
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // We release and close the user's input with the program(stdin).
+        // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF);
+        clearerr(stdin);
+
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // We return the error code for a buffer overflow attempt.
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        return (101);
+    }
+
+    clearerr(stdin);
+    
+    // ++++++++++++++++++++++++++++++++++++
+    // We put the obligatory finalizer
+    // ++++++++++++++++++++++++++++++++++++
+    (*filename)[len - 1] = '\0';
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // We reactivate the stdin entry in the active terminal that the user is using,
+    // but simply the program dies since we do not have access to the user's input.
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    if (freopen("/dev/tty", "r", stdin) == NULL) {
+        fprintf(stderr, "\n\n\x1b[31m[ERROR]: the stdin could not be reopened, there was a problem in the process of reopening the user's input, ending the program...\x1b[0m\n\n");
+        return (1);
+    }
+
+    return (0);
+}
+
+
 int main(int argc, char *argv[]) {
 
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -916,20 +974,41 @@ int main(int argc, char *argv[]) {
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // Receive the name of the file the user wants to create.
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        char filename[max_range_filename];
-        filename[0] = '\0';
+        char *filename = calloc(max_range_filename, sizeof(char));
+        
+        if (filename == NULL) {
+            fprintf(stderr, "\n\n[ERROR]: Memory Allocation Error...\n\n");
+            return(1);
+        }
         
 
         printf("\n[>] Enter the name of the file you are going to create: ");
 
-        if (fgets(filename, sizeof(filename), stdin) == NULL) {
-            sodium_memzero(filename, sizeof filename);
-            filename[0] = '\0';
+       
+        int check_filename = processing_filename(max_range_filename, &filename);
+
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // We verify that no error has occurred in the process of 
+        // obtaining the user's input.
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        if (check_filename != 0) {
+
+            if (check_filename == 101) {
+                sodium_memzero(filename, max_range_filename);
+                free(filename);
+                filename = NULL;
+                return(101);
+            }
+
+            sodium_memzero(filename, max_range_filename);
+            free(filename);
+            filename = NULL;
+
             return (1);
+
         }
 
-        filename[str_cspn(filename, "\n")] = '\0';
-
+        
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // Get the default path of the new file created by the user.
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -942,7 +1021,9 @@ int main(int argc, char *argv[]) {
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         creation_jpg(route_new_file);
    
-        filename[0] = '\0';
+        sodium_memzero(filename, max_range_filename);
+        free(filename);
+        filename = NULL;
 
                         
         // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -981,13 +1062,13 @@ int main(int argc, char *argv[]) {
         if (result != 0) {
 
             if (result == 101) {
-                sodium_memzero(message, sizeof message);
+                sodium_memzero(message, max_range_message);
                 free(message);
                 message = NULL;
                 return(101);
             }
 
-            sodium_memzero(message, sizeof message);
+            sodium_memzero(message, max_range_message);
             free(message);
             message = NULL;
 
@@ -1089,7 +1170,7 @@ int main(int argc, char *argv[]) {
         // Verify that the user has provided a valid path to execute the function.
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         if (argc < 2) {
-            fprintf(stderr, "[!] A path is required to edit a file: %s /path/to/file.jpg", argv[0]);
+            fprintf(stderr, "\n\n>> [!] A path is required to edit a file: %s /path/to/file.jpg\n", argv[0]);
             return (1);
         }
 
