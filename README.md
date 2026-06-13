@@ -104,17 +104,46 @@ This option allows modifying or completely replacing the hidden message in the f
 
 Ensure `libsodium` and the standard development tools are present on your system before building:
 
-```bash
-# Install dependencies on Arch Linux
-sudo pacman -Syu libsodium valgrind base-devel
 
+## Install dependencies:
+
+### Arch Linux:
+
+``` bash
+# Install dependencies on Arch Linux
+sudo pacman -Syu libsodium valgrind base-devel unzip
+```
+
+### Debian:
+
+``` bash
+# Install dependencies on Debian / Ubuntu / Mint
+sudo apt update && sudo apt install -y libsodium-dev valgrind build-essential unzip
+```
+
+### Fedora:
+
+``` bash
+# Install dependencies on Fedora / RHEL
+sudo dnf check-update ; sudo dnf install -y libsodium-devel valgrind gcc gcc-c++ make unzip
+```
+
+## Compilation:
+
+``` bash
 # Clone the repository
 curl -L -O https://github.com/JBHCK32/Krypto_Tex/archive/refs/heads/master.zip
 unzip master.zip
 cd Krypto_Tex-*/Proto-3
 
-# Compile kryptotex
-gcc -Wall -Wextra -Werror -O2     -fstack-protector-strong     -D_FORTIFY_SOURCE=3     -fPIE -pie     -Wl,-z,relro,-z,now     -Wl,-z,noexecstack     main.c -o kryptotex -lsodium
+# Compile kryptotex with security hardening flags
+gcc -Wall -Wextra -Werror -O2 \
+    -fstack-protector-strong \
+    -D_FORTIFY_SOURCE=3 \
+    -fPIE -pie \
+    -Wl,-z,relro,-z,now \
+    -Wl,-z,noexecstack \
+    main.c -o kryptotex -lsodium
 
 # Give execute permissions only to sudo
 sudo chmod 700 kryptotex
